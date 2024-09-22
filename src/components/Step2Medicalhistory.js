@@ -111,36 +111,39 @@ const Step2Medicalhistory = () => {
                 <h5 className='font-semibold'>Medical History Questionnaire</h5>
                 <p>Please tick if you suffer from any of the following conditions.</p>
             </div>
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Question No.</TableCell>
-                            <TableCell>Questionnaire Questions</TableCell>
-                            {dependantFirstNames.map((name, index) => (
-                                <TableCell key={index}>{name}</TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {medicalConditions.map((condition, index) => (
-                            <TableRow key={index}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>{condition}</TableCell>
-                                {Array.from({ length: dependantCount + 1 }, (_, userIndex) => (
-                                    <TableCell key={userIndex}>
-                                        <Checkbox
-                                            value={condition}
-                                            checked={selectedConditions[userIndex]?.includes(condition)}
-                                            onChange={(event) => handleChange(event, userIndex)}
-                                        />
-                                    </TableCell>
+            {/* Only render table if dependantFirstNames has data */}
+            {dependantFirstNames.length > 0 && (
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Question No.</TableCell>
+                                <TableCell>Questionnaire Questions</TableCell>
+                                {dependantFirstNames.map((name, index) => (
+                                    <TableCell key={index}>{name}</TableCell>
                                 ))}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {medicalConditions.map((condition, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>{condition}</TableCell>
+                                    {Array.from({ length: dependantCount + 1 }, (_, userIndex) => (
+                                        <TableCell key={userIndex}>
+                                            <Checkbox
+                                                value={condition}
+                                                checked={selectedConditions[userIndex]?.includes(condition)}
+                                                onChange={(event) => handleChange(event, userIndex)}
+                                            />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
             <Button variant="contained" color="primary" onClick={handleSave}>
                 Save Medical History
             </Button>
