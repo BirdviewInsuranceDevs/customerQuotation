@@ -67,18 +67,18 @@ const Step0Medical = ({
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0)) }`;
+             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
             }
             else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             return convertedAmount;
@@ -93,6 +93,13 @@ const Step0Medical = ({
                 ...prevState,
                 totalAmount
               })); 
+              const premium =  (Number(formDataStep0Medical.dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(formDataStep0Medical.dependantCount) + 1 ))  );
+              setFormDataStep0Medical(prevState => ({
+                ...prevState,
+                premium
+              })); 
+
+
             }
           } else {
             if (selectedPlan) {
@@ -101,9 +108,16 @@ const Step0Medical = ({
                 ...prevState,
                 totalAmount
               })); 
+              const premium = (Number(selectedPlan.premium)) 
+              setFormDataStep0Medical(prevState => ({
+                ...prevState,
+                premium
+              })); 
+
+
             }
           }
-          }, [formDataStep0Medical.selectedPlan ,formDataStep0Medical.dependantCount,formDataStep0Medical.coverType,  MedicalPlans]);
+          }, [formDataStep0Medical.selectedPlan,setFormDataStep0Medical ,formDataStep0Medical.dependantCount,formDataStep0Medical.coverType,  MedicalPlans]);
       
       
     return (
@@ -255,15 +269,15 @@ const Step0Medical = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
                             <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>{plan.premium}</span>
+                            <span>Ksh. {formDataStep0Medical.premium}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{0.002 * Number(plan.premium) || 'N/A'}</span>
+                            <span>{(0.002 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{0.0025 * Number(plan.premium)  || 'N/A'}</span>
+                            <span>{(0.0025 * Number(plan.premium).toFixed(2))  || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                               <span className="font-medium">Stamp Duty</span>

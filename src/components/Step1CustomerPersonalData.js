@@ -86,12 +86,8 @@ const Step1PersonalData = ({
             surname: "",
             dob: "",
             relationship: "",
-            product: {
-              evacuationRepatriation: checkedAddProductItemsEvacuationRepatriation,
-              lastExpense: checkedAddProductItemsLastExpense,
-              medical: checkedAddProductItemsMedical,
-              hospitalCash: checkedAddProductItemsHospitalCash,
-              personalAccident: checkedAddProductItemsPersonalAccident,
+            productMedical: {
+           
             },
             evacuationRepatriation: false,
             lastExpense: false,
@@ -126,17 +122,14 @@ const Step1PersonalData = ({
   useEffect(() => {
    
     getDependantData(DependantDetailsStep1);
-  }, [DependantDetailsStep1, getDependantData]);  
+  }, [DependantDetailsStep1, getDependantData]); 
+   
   useEffect(() => {
     setDependantDetailsStep1((prevDependantDetails) =>
       prevDependantDetails.map((dependant) => ({
         ...dependant,
-        product: {
-          evacuationRepatriation: checkedAddProductItemsEvacuationRepatriation,
-          lastExpense: checkedAddProductItemsLastExpense,
-          medical: checkedAddProductItemsMedical,
-          hospitalCash: checkedAddProductItemsHospitalCash,
-          personalAccident: checkedAddProductItemsPersonalAccident,
+        productMedical: {
+          
         },
       }))
     );
@@ -746,7 +739,7 @@ const Step1PersonalData = ({
             {/* Dependants Table */}
             <div className="shadow-div mt-4">
                  <div className='mb-4'>
-                    <h5 className='font-semibold'>   Dependant Details  <span onClick={handleOpenDependantaInforIcon}>   <InfoIcon className='text-gray-500' />  </span>  </h5>
+                    <h5 className='font-semibold'>   Dependant Details  <span onClick={handleOpenDependantaInforIcon}>   <InfoIcon className='text-blue-900' style={{color:'#157EBc'}} />  </span>  </h5>
                      <Tooltip title="Applicable To Medical and Hospital cash!" open={openDependantaInforIcon} onClose={() => setOpenDependantaInforIcon(false)} arrow>  <span />  </Tooltip>
                 </div>
 
@@ -761,11 +754,11 @@ const Step1PersonalData = ({
                         <th className="py-2 px-4 text-center border-b">Surname</th>
                         <th className="py-2 px-4 text-center border-b">DOB</th>
                         <th className="py-2 px-4 text-center border-b">Relationship</th>
-                        {DependantDetailsStep1[0]?.product.evacuationRepatriation && <th className="py-2 px-4 text-center border-b">Evacuation & Repatriation</th>}
-                        {DependantDetailsStep1[0]?.product.lastExpense && <th className="py-2 px-4 text-center border-b">Last Expense</th>}
-                        {DependantDetailsStep1[0]?.product.medical && <th className="py-2 px-4 text-center border-b">Medical</th>}
-                        {DependantDetailsStep1[0]?.product.hospitalCash && <th className="py-2 px-4 text-center border-b">Hospital Cash</th>}
-                        {DependantDetailsStep1[0]?.product.personalAccident && <th className="py-2 px-4 text-center border-b">Personal Accident</th>}
+                        {checkedAddProductItemsEvacuationRepatriation && <th className="py-2 px-4 text-center border-b">Evacuation & Repatriation</th>}
+                        {checkedAddProductItemsLastExpense && <th className="py-2 px-4 text-center border-b">Last Expense</th>}
+                        {checkedAddProductItemsMedical && <th className="py-2 px-4 text-center border-b">Medical</th>}
+                        {checkedAddProductItemsHospitalCash && <th className="py-2 px-4 text-center border-b">Hospital Cash</th>}
+                        {checkedAddProductItemsPersonalAccident && <th className="py-2 px-4 text-center border-b">Personal Accident</th>}
                         <th className="py-2 px-4 text-center border-b">Action</th>
                         </tr>
                     </thead>
@@ -779,8 +772,7 @@ const Step1PersonalData = ({
                             <td className="py-2 px-4 text-center border-b">{dependant.surname}</td>
                             <td className="py-2 px-4 text-center border-b">{dependant.dob}</td>
                             <td className="py-2 px-4 text-center border-b">{dependant.relationship}</td>
-
-                            {dependant.product.evacuationRepatriation && (
+                            {checkedAddProductItemsEvacuationRepatriation && (
                             <td className="py-2 px-4 text-center border-b">
                                 <FormControlLabel
                                 control={
@@ -793,7 +785,7 @@ const Step1PersonalData = ({
                                 />
                             </td>
                             )}
-                            {dependant.product.lastExpense && (
+                            {checkedAddProductItemsLastExpense && (
                             <td className="py-2 px-4 text-center border-b">
                                 <FormControlLabel
                                 control={
@@ -806,7 +798,7 @@ const Step1PersonalData = ({
                                 />
                             </td>
                             )}
-                            {dependant.product.medical && (
+                            {checkedAddProductItemsMedical && (
                             <td className="py-2 px-4 text-center border-b">
                                 <FormControlLabel
                                 control={
@@ -819,7 +811,7 @@ const Step1PersonalData = ({
                                 />
                             </td>
                             )}
-                            {dependant.product.hospitalCash && (
+                            {checkedAddProductItemsHospitalCash && (
                             <td className="py-2 px-4 text-center border-b">
                                 <FormControlLabel
                                 control={
@@ -832,7 +824,7 @@ const Step1PersonalData = ({
                                 />
                             </td>
                             )}
-                            {dependant.product.personalAccident && (
+                            {checkedAddProductItemsPersonalAccident && (
                             <td className="py-2 px-4 text-center border-b">
                                 <FormControlLabel
                                 control={
@@ -931,7 +923,7 @@ const Step1PersonalData = ({
                     {dependantErrors.relationship && <FormHelperText>{dependantErrors.relationship}</FormHelperText>}
                 </FormControl>
 
-                       {formDataUpdateDependantDetailsDialogStep1?.product.evacuationRepatriation && (
+                       {checkedAddProductItemsEvacuationRepatriation && (
                             <FormControlLabel
                             control={
                                 <Checkbox
@@ -943,7 +935,7 @@ const Step1PersonalData = ({
                             />
                        )}
 
-                        {formDataUpdateDependantDetailsDialogStep1?.product.lastExpense && (
+                        {checkedAddProductItemsLastExpense && (
                         <FormControlLabel
                             control={
                                 <Checkbox
@@ -954,8 +946,7 @@ const Step1PersonalData = ({
                             label="Last Expense"
                         />)}
 
-                      
-                        {formDataUpdateDependantDetailsDialogStep1?.product.medical && (
+                        {checkedAddProductItemsMedical && (
                             <FormControlLabel
                                 control={
                                     <Checkbox
@@ -968,7 +959,7 @@ const Step1PersonalData = ({
                             />
                         )}
 
-                       {formDataUpdateDependantDetailsDialogStep1?.product.hospitalCash && (
+                       {checkedAddProductItemsHospitalCash && (
                             <FormControlLabel
                                 control={
                                     <Checkbox
@@ -981,7 +972,7 @@ const Step1PersonalData = ({
                             />
                         )}
 
-                         {formDataUpdateDependantDetailsDialogStep1?.product.personalAccident && (
+                         {checkedAddProductItemsPersonalAccident && (
                             <FormControlLabel
                                 control={
                                     <Checkbox

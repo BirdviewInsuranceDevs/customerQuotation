@@ -29,18 +29,18 @@ const Step0PersonalAccident = ({
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0)) }`;
+             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
             }
             else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             return convertedAmount;
@@ -55,7 +55,7 @@ const Step0PersonalAccident = ({
                 totalAmount
               })); 
             }
-          }, [formDataStep0PersonalAccident.selectedPlan, PersonalAccidentPlans]);
+          }, [formDataStep0PersonalAccident.selectedPlan,setFormDataStep0PersonalAccident, PersonalAccidentPlans]);
           
       
     return (
@@ -205,11 +205,11 @@ const Step0PersonalAccident = ({
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{ 0.002 * Number(plan.premium) || 'N/A'}</span>
+                            <span>{ (0.002 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{0.0025 * Number(plan.premium) || 'N/A'}</span>
+                            <span>{ (0.0025 * Number(plan.premium).toFixed(2)) || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Stamp Duty</span>

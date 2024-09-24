@@ -28,18 +28,18 @@ const Step0HospitalCash = ({
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0)) }`;
+             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
             }
             else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
       
             }
             return convertedAmount;
@@ -54,6 +54,12 @@ const Step0HospitalCash = ({
                 ...prevState,
                 totalAmount
               })); 
+
+              const premium =  (Number(formDataStep0HospitalCash.dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(formDataStep0HospitalCash.dependantCount) + 1 ))  );
+              setFormDataStep0HospitalCash(prevState => ({
+                ...prevState,
+                premium
+              })); 
             }
           } else {
             if (selectedPlan) {
@@ -62,12 +68,17 @@ const Step0HospitalCash = ({
                 ...prevState,
                 totalAmount
               })); 
+              const premium = (Number(selectedPlan.premium)) 
+              setFormDataStep0HospitalCash(prevState => ({
+                ...prevState,
+                premium
+              })); 
             }
 
 
           }
 
-          }, [formDataStep0HospitalCash.selectedPlan ,formDataStep0HospitalCash.dependantCount,formDataStep0HospitalCash.coverType,  HospitalCashPlans]);
+          }, [formDataStep0HospitalCash.selectedPlan,setFormDataStep0HospitalCash ,formDataStep0HospitalCash.dependantCount,formDataStep0HospitalCash.coverType,  HospitalCashPlans]);
       
     return (
       <div className="bg-white p-2 shadow-div shadow-3xl  mt-1">
@@ -239,15 +250,15 @@ const Step0HospitalCash = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t ">
                           <div className="flex justify-between border-b  pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>{plan.premium || 'N/A'}</span>
+                            <span>Ksh. {formDataStep0HospitalCash.premium || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{0.002 * Number(plan.premium) || 'N/A'}</span>
+                            <span>{(0.002 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{0.0025 * Number(plan.premium) || 'N/A'}</span>
+                            <span>{(0.0025 * Number(plan.premium).toFixed(2)) || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                           <span className="font-medium">Stamp Duty</span>

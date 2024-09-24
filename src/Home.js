@@ -4,7 +4,8 @@ import { Stepper, Step, StepLabel } from '@mui/material';
 import Step0 from './pages/Step0';
 import Step1 from './pages/Step1';
 import Step2 from './pages/Step2';
-
+// css home
+import './Home.css';
 // Example steps for the Stepper component
 const steps = ['Product Selection', 'Personal Data', 'Medical History', 'Policy Summary', 'Payment', 'Policy Issuance'];
 

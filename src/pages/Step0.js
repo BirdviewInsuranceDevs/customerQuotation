@@ -164,6 +164,7 @@ const Step0 = () => {
             coverType: '',
             policyStartDate: '',
             selectedPlan: null,
+            premium: '',
             totalAmount:'',
             };     
                                                                
@@ -176,6 +177,7 @@ const Step0 = () => {
             coverType: '',
             policyStartDate: '',
             selectedPlan: null,
+            premium: '',
             totalAmount:'',
             };
             const [formDataStep0LastExpense, setFormDataStep0LastExpense] = useState(savedLastExpense);
@@ -187,6 +189,7 @@ const Step0 = () => {
             dependantCount: '',
             policyStartDate: '',
             selectedPlan: null,
+            premium: '',
             totalAmount:'',
             };
             const [formDataStep0Medical, setFormDataStep0Medical] = useState(savedMedical);
@@ -198,6 +201,8 @@ const Step0 = () => {
             coverType: '',
             policyStartDate: '',
             selectedPlan: null,
+            premium: '',
+            totalAmount:'',
             };
             const [formDataStep0HospitalCash, setFormDataStep0HospitalCash] = useState(savedHospitalCash);
 
@@ -207,6 +212,8 @@ const Step0 = () => {
             coverType: '',
             policyStartDate: '',
             selectedPlan: null,
+            premium: '',
+            totalAmount:'',
             };
             const [formDataStep0PersonalAccident, setFormDataStep0PersonalAccident] = useState(savedPersonalAccident);
  
@@ -517,7 +524,7 @@ const Step0 = () => {
 
   return (
     <div >
-      <div className="container mx-auto p-4 ">
+      <div className="container mx-auto ">
 
         {/* Step 1 Forms Visibility Stops after Step 1 is Completed */}
         { activeStep === 0 && 
@@ -778,3 +785,6 @@ const Step0 = () => {
 };
 
 export default Step0;
+
+
+ 

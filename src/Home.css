@@ -1,0 +1,31 @@
+@media screen and (max-width: 1400px){
+    .logoImage{
+        width: 25% !important;
+          }
+   
+}
+@media screen and (max-width: 1000px){
+    .logoImage{
+        width: 30% !important;
+    }
+}
+
+@media screen and (max-width: 800px){
+    .logoImage{
+        width: 38% !important;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .Table-titles {
+      grid-template-columns: repeat(4, 1fr); /* Set the grid to 4 columns */
+    }
+  
+    .Product_ID {
+      display: none !important; /* Hide the Product ID column */
+    }
+    .Table-datas{
+        grid-template-columns: repeat(4, 1fr); /* Set the grid to 4 columns */
+    }
+  }
+  

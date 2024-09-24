@@ -139,42 +139,93 @@ const  Step1 =() =>{
            const handleNext = () => {
             // Validation logic
             if (validateStep()) {
-
-                 if(activeStep === 1){
-                // Fetch Dependant Data from Step 2
-                
-                // Creating the customerDetailsData object
-                const customerDetailsData = {
-                  title: formDataStep1CustomerPersonalDetails.title,
-                  firstName: formDataStep1CustomerPersonalDetails.firstName,
-                  middleName: formDataStep1CustomerPersonalDetails.middleName,
-                  surname: formDataStep1CustomerPersonalDetails.surname,
-                  dob: formDataStep1CustomerPersonalDetails.dob,
-                  gender: formDataStep1CustomerPersonalDetails.gender,
-                  nationality: formDataStep1CustomerPersonalDetails.nationality,
-                  countryofResidence: formDataStep1CustomerPersonalDetails.countryofResidence,
-                  nationalIDPassportNo: formDataStep1CustomerPersonalDetails.nationalIDPassportNo,
-                  nhif: formDataStep1CustomerPersonalDetails.nhif,
-                  pin: formDataStep1CustomerPersonalDetails.pin,
-                  employer: formDataStep1CustomerPersonalDetails.employer,
-                  postalAddress: formDataStep1CustomerPersonalDetails.postalAddress,
-                  code: formDataStep1CustomerPersonalDetails.code,
-                  town: formDataStep1CustomerPersonalDetails.town,
-                  occupation: formDataStep1CustomerPersonalDetails.occupation,
-                  physicalAddress: formDataStep1CustomerPersonalDetails.physicalAddress,
-                  mobileNo: formDataStep1CustomerPersonalDetails.mobileNo,
-                  otherPhone: formDataStep1CustomerPersonalDetails.otherPhone,
-                  email: formDataStep1CustomerPersonalDetails.email,
-                  dependantPersonalData:dependantPersonalData,
-                };
-
-                localStorage.setItem('step2', JSON.stringify(customerDetailsData));
-                 
-                 }
-                // Process Next Page
+                if (activeStep === 1) {
+                  // Fetch existing data from localStorage (if available)
+                  const existingData = JSON.parse(localStorage.getItem('step2')) || {};
+                  const existingDependants = existingData.dependantPersonalData || [];
+              
+                  // Incoming new dependant data
+                  const newDependants = dependantPersonalData;
+              
+                  // Function to merge dependants
+                  const mergeDependants = (existingDependants, newDependants) => {
+                    // Create a map of existing dependants by dependantNo for quick lookup
+                    const existingMap = existingDependants.reduce((acc, dependant) => {
+                      acc[dependant.dependantNo] = dependant;
+                      return acc;
+                    }, {});
+              
+                    // Loop through new dependants and merge them with existing ones
+                    const mergedDependants = newDependants.map(newDependant => {
+                      const existingDependant = existingMap[newDependant.dependantNo];
+              
+                      if (existingDependant) {
+                        // Merge the existing dependant with the new one, preserving fields like productMedical
+                        return {
+                          ...existingDependant, // Preserve existing fields
+                          ...newDependant, // Override with new data
+                          productMedical: {
+                            ...existingDependant.productMedical, // Preserve existing medical conditions
+                            ...newDependant.productMedical // Override or merge new medical conditions if provided
+                          }
+                        };
+                      } else {
+                        // If no matching dependant exists, simply return the new dependant
+                        return newDependant;
+                      }
+                    });
+              
+                    return mergedDependants;
+                  };
+              
+                  // Perform the merging of dependants
+                  const mergedDependants = mergeDependants(existingDependants, newDependants);
+              
+                  // Creating the customerDetailsData object
+                  const customerDetailsData = {
+                    title: formDataStep1CustomerPersonalDetails.title,
+                    firstName: formDataStep1CustomerPersonalDetails.firstName,
+                    middleName: formDataStep1CustomerPersonalDetails.middleName,
+                    surname: formDataStep1CustomerPersonalDetails.surname,
+                    dob: formDataStep1CustomerPersonalDetails.dob,
+                    gender: formDataStep1CustomerPersonalDetails.gender,
+                    nationality: formDataStep1CustomerPersonalDetails.nationality,
+                    countryofResidence: formDataStep1CustomerPersonalDetails.countryofResidence,
+                    nationalIDPassportNo: formDataStep1CustomerPersonalDetails.nationalIDPassportNo,
+                    nhif: formDataStep1CustomerPersonalDetails.nhif,
+                    pin: formDataStep1CustomerPersonalDetails.pin,
+                    employer: formDataStep1CustomerPersonalDetails.employer,
+                    postalAddress: formDataStep1CustomerPersonalDetails.postalAddress,
+                    code: formDataStep1CustomerPersonalDetails.code,
+                    town: formDataStep1CustomerPersonalDetails.town,
+                    occupation: formDataStep1CustomerPersonalDetails.occupation,
+                    physicalAddress: formDataStep1CustomerPersonalDetails.physicalAddress,
+                    mobileNo: formDataStep1CustomerPersonalDetails.mobileNo,
+                    otherPhone: formDataStep1CustomerPersonalDetails.otherPhone,
+                    email: formDataStep1CustomerPersonalDetails.email,
+                    
+                    // Use the merged dependantPersonalData
+                    dependantPersonalData: mergedDependants
+                  };
+              
+                  // Merge the existing data with the new customerDetailsData
+                  const updatedData = {
+                    ...existingData, // Keeps existing data that isn't overwritten
+                    ...customerDetailsData // Overrides existing fields with new data
+                  };
+              
+                  // Store the updated data back to localStorage
+                  localStorage.setItem('step2', JSON.stringify(updatedData));
+                }
+              
+                // Process to the next page
                 setActiveStep((prevActiveStep) => prevActiveStep + 1);
+              
+                // Reload the page (if needed)
                 window.location.reload();
               }
+              
+              
 
              }
 

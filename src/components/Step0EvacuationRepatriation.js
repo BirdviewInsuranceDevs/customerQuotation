@@ -28,18 +28,18 @@ const Step0EvacuationRepatriation  = ({
       // Convert to selected currency
       let convertedAmount ='';
       if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-       convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0)) }`;
+       convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
       }
       else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-       convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+       convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
 
       }
       else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-       convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+       convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
 
       }
       else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-       convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(0))}`;
+       convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
 
       }
       return convertedAmount;
@@ -55,7 +55,7 @@ const Step0EvacuationRepatriation  = ({
           totalAmount
         })); 
       }
-    }, [formDataStep0EvacuationRepatriation.selectedPlan, EvacuationRepatriationPlans]);
+    }, [formDataStep0EvacuationRepatriation.selectedPlan,setFormDataStep0EvacuationRepatriation, EvacuationRepatriationPlans]);
     
     
   return (
@@ -215,11 +215,11 @@ const Step0EvacuationRepatriation  = ({
                       </div>
                       <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                         <span className="font-medium">ITL</span>
-                        <span>{ 0.002 * Number(plan.premium) || 'N/A'}</span>
+                        <span>{(0.002 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                         <span className="font-medium">PCF</span>
-                        <span>{0.0025 * Number(plan.premium) || 'N/A'}</span>
+                        <span>{(0.0025 * Number(plan.premium).toFixed(2)) || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                         <span className="font-medium">Stamp Duty</span>
