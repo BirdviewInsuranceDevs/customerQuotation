@@ -18,9 +18,7 @@ const Step0LastExpense = ({
         LastExpensePlans 
       }) => {  
 
-        const formatNumberWithCommas = (amount) => {
-          return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        };
+        
           // convertor Function
           const convertAmount = (amount) => {
             // Remove commas and convert to number
@@ -28,18 +26,18 @@ const Step0LastExpense = ({
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
+             convertedAmount =`Ksh. ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString() }`;
             }
             else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`$ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`€ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`£ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             return convertedAmount;
@@ -53,6 +51,12 @@ const Step0LastExpense = ({
                 ...prevState,
                 totalAmount
               })); 
+              const { coverAmount, premium } = selectedPlan;   
+              setFormDataStep0LastExpense(prevState => ({
+                ...prevState,
+                coverAmount: Number(coverAmount),  
+                premium: Number(premium)   
+              }));
             }
           }, [formDataStep0LastExpense.selectedPlan,setFormDataStep0LastExpense, LastExpensePlans]);
           
@@ -156,24 +160,20 @@ const Step0LastExpense = ({
                         backgroundColor: plan.id === formDataStep0LastExpense.selectedPlan ? '#388e3c' : 'inherit',
                         color: plan.id === formDataStep0LastExpense.selectedPlan ? '#ffffff' : 'inherit',
                       }}
+                      onClick={() => setFormDataStep0LastExpense({ ...formDataStep0LastExpense, selectedPlan: plan.id })}
+
                     >
                       <TableCell align="center" sx={{color: plan.id === formDataStep0LastExpense.selectedPlan ? 'white' : 'inherit' }}>{plan.plan}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0LastExpense.selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.coverAmount)}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0LastExpense.selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.premium)}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0LastExpense.selectedPlan ? 'white' : 'inherit' }}>
-                        <Button
-                          variant="contained"
-                          color="434"
-                          size="small"
-                          sx={{ minWidth: '20px', padding: '2px 4px', fontSize: '0.75rem' }}
-                          onClick={() => setFormDataStep0LastExpense({ ...formDataStep0LastExpense, selectedPlan: plan.id })}
-                        >
+                       
                           {plan.id === formDataStep0LastExpense.selectedPlan ? (
                             <CheckCircleOutlineIcon />
                           ) : (
                             <CheckBoxOutlineBlankIcon />
                           )}
-                        </Button>
+                       
                       </TableCell>
                     </TableRow>
                   ))}
@@ -201,7 +201,7 @@ const Step0LastExpense = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t ">
                           <div className="flex justify-between border-b  pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh {formatNumberWithCommas(plan.premium) || 'N/A'}</span>
+                            <span>Ksh {Number(plan.premium).toLocaleString() || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
@@ -209,7 +209,7 @@ const Step0LastExpense = ({
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{(0.0025 * Number(plan.premium).toFixed(2)) || 'N/A'}</span>
+                            <span>{(0.0025 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Stamp Duty</span>
@@ -217,7 +217,7 @@ const Step0LastExpense = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh {formatNumberWithCommas(Number(formDataStep0LastExpense.totalAmount))  || 'N/A'}</b></span>
+                            <span><b>Ksh { Number(formDataStep0LastExpense.totalAmount).toLocaleString()  || 'N/A'}</b></span>
                           </div>
                         </div>
                       </div>

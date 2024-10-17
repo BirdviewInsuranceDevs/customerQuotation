@@ -22,7 +22,44 @@ const Step1PersonalData = ({
   const [openUpdateUserFormDialogStep1, setOpenUpdateUserFormDialogStep1] =  useState(false);
   const [ formDataUpdateDependantDetailsDialogStep1, setFormDataUpdateDependantDetailsDialogStep1 ] = useState(null);
   const [dependantErrors, setDependantErrors] = useState({});
+  const [policyNumberHolder, setPolicyNumberHolder] = useState(null);
+
   // handle open Dependant Icon   
+  const usedPolicyNumbers = new Set(); // Set to store generated policy numbers
+
+  function generatePolicyNumber() {
+    const now = new Date(); 
+    
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hour = String(now.getHours()).padStart(2, '0');
+    const minute = String(now.getMinutes()).padStart(2, '0');
+    const second = String(now.getSeconds()).padStart(2, '0');
+    const millisecond = String(now.getMilliseconds()).padStart(3, '0');
+    
+    // Generate a random number between 100000 and 999999 for additional uniqueness
+    const randomPart = Math.floor(100 + Math.random() * 900000);
+  
+    // Combine everything into the final policy number
+    const policyNumber = `${year}${month}${day}${hour}${minute}${second}${millisecond}${randomPart}`;
+    
+    // Check for uniqueness
+    if (usedPolicyNumbers.has(policyNumber)) {
+      // If the policy number exists, generate a new one
+      return generatePolicyNumber();
+    }
+  
+       // Otherwise, add the new policy number to the Set
+        usedPolicyNumbers.add(policyNumber);
+        
+        return policyNumber;
+    }
+    
+    useEffect(() => {
+        setPolicyNumberHolder(generatePolicyNumber());
+    }, [ setPolicyNumberHolder,setFormDataStep1CustomerPersonalDetails]);
+
   const handleOpenDependantaInforIcon = () => {
     setOpenDependantaInforIcon((prev) => !prev);
   };
@@ -30,7 +67,7 @@ const Step1PersonalData = ({
   const initialDependantDetails = () => { 
     // If no valid saved data, create default data
     return Array.from({ length: dependantCount }, (_, index) => ({
-        principalNo: 48,
+        principalNo: policyNumberHolder,
         dependantNo: index + 1,
         firstName: "",
         middleName: "",
@@ -73,13 +110,15 @@ const Step1PersonalData = ({
     setDependantDetailsStep1((prevDependantDetails) => {
       // Create a copy of the existing details
       const updatedDetails = [...existingDependants];
+
+
   
       // If we need to increase the count
       if (dependantCount > updatedDetails.length) {
         const newEntries = Array.from(
           { length: dependantCount - updatedDetails.length },
           (_, index) => ({
-            principalNo: 48,
+            principalNo: policyNumberHolder,
             dependantNo: updatedDetails.length + index + 1,
             firstName: "",
             middleName: "",
@@ -737,6 +776,7 @@ const Step1PersonalData = ({
             </div>
 
             {/* Dependants Table */}
+            {(checkedAddProductItemsMedical || checkedAddProductItemsHospitalCash) &&
             <div className="shadow-div mt-4">
                  <div className='mb-4'>
                     <h5 className='font-semibold'>   Dependant Details  <span onClick={handleOpenDependantaInforIcon}>   <InfoIcon className='text-blue-900' style={{color:'#157EBc'}} />  </span>  </h5>
@@ -858,7 +898,7 @@ const Step1PersonalData = ({
 
                 </div>
             </div>
-
+             }
             {/* Dialog for editing dependant details */}
             <Dialog open={openUpdateUserFormDialogStep1} onClose={handleCloseupdateDialogStep1}>
                 <DialogTitle>Edit Dependant</DialogTitle>

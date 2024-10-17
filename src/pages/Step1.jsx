@@ -75,9 +75,11 @@ const  Step1 =() =>{
     }, []);  // Use an empty dependency array if this should run only once
     
 
+    
   const savedStep2Data = JSON.parse(localStorage.getItem('step2')) || {};
             // Extarct Functionality of Product
             const savedFormDataStep1CustomerPersonalDetails = savedStep2Data || {
+                policyNumberHolder:'',
                 title:'',
                 firstName:'',
                 middleName:'',
@@ -183,6 +185,7 @@ const  Step1 =() =>{
               
                   // Creating the customerDetailsData object
                   const customerDetailsData = {
+                    policyNumberHolder:formDataStep1CustomerPersonalDetails.policyNumberHolder,
                     title: formDataStep1CustomerPersonalDetails.title,
                     firstName: formDataStep1CustomerPersonalDetails.firstName,
                     middleName: formDataStep1CustomerPersonalDetails.middleName,
@@ -213,7 +216,8 @@ const  Step1 =() =>{
                     ...existingData, // Keeps existing data that isn't overwritten
                     ...customerDetailsData // Overrides existing fields with new data
                   };
-              
+                  // Clear
+                  localStorage.removeItem('step2');
                   // Store the updated data back to localStorage
                   localStorage.setItem('step2', JSON.stringify(updatedData));
                 }
@@ -258,8 +262,7 @@ const  Step1 =() =>{
                 checkedAddProductItemsHospitalCash={checkedAddProductItems.hospitalCash}
                 checkedAddProductItemsPersonalAccident={checkedAddProductItems.personalAccident}
            />
-
-
+           
            <div className="flex flex-col items-center mb-4 ">
                 <div className="mt-4 flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
                     <Button

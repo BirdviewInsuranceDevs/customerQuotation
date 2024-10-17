@@ -16,50 +16,89 @@ const Step0Medical = ({
         setErrors,
         MedicalPlans 
       }) => {  
+        useEffect(() => {
+          computeRatesOnSelect(
+            formDataStep0Medical[`selectedPlanInpatient`],
+            formDataStep0Medical.dependantCount,
+            MedicalPlans,
+            formDataStep0Medical.coverType,
+            "Inpatient"
+          );
+        computeRatesOnSelect(
+          formDataStep0Medical[`selectedPlanOutpatient`],
+          formDataStep0Medical.dependantCount,
+          MedicalPlans,
+          formDataStep0Medical.coverType,
+          "Outpatient"
+          );
 
-        const renderCategory = (category, plans, selectedPlan) => (
+        computeRatesOnSelect(
+          formDataStep0Medical[`selectedPlanDental`],
+          formDataStep0Medical.dependantCount,
+          MedicalPlans,
+          formDataStep0Medical.coverType,
+          "Dental"
+          );
+
+         computeRatesOnSelect(
+            formDataStep0Medical[`selectedPlanOptical`],
+            formDataStep0Medical.dependantCount,
+            MedicalPlans,
+            formDataStep0Medical.coverType,
+            "Optical"
+            );
+          
+        }, [
+          formDataStep0Medical[`selectedPlanInpatient`], 
+          formDataStep0Medical[`selectedPlanOutpatient`],
+          formDataStep0Medical[`selectedPlanDental`],
+          formDataStep0Medical[`selectedPlanOptical`],
+          formDataStep0Medical.dependantCount,
+          MedicalPlans,
+          formDataStep0Medical.coverType                
+        ]);
+        const renderCategory = (category, plans, selectedPlan,dependantCount,coverType,MedicalPlans) => (
           <>
             <TableRow sx={{ backgroundColor: 'gray.700', color: 'white' }}>
-              <TableCell colSpan={7} align="center" sx={{ fontWeight: 'bold' }}>
+              <TableCell colSpan={5} align="center" sx={{ fontWeight: 'bold' }}>
                 {category} Plans
+     
               </TableCell>
             </TableRow>
             {plans.map((plan) => (
               <TableRow
                 key={plan.id}
                 sx={{
-                  backgroundColor: plan.id === selectedPlan ? 'green' : 'inherit',
+                  backgroundColor: plan.id === selectedPlan ? '#388e3c' : 'inherit',
                   color: plan.id === selectedPlan ? 'white' : 'inherit',
+                  cursor: 'pointer', // Add a cursor style for better UX
                 }}
-              >
-                <TableCell align="center" sx={{ padding: '4px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{plan.plan}</TableCell>
-                <TableCell align="center" sx={{ padding: '4px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{plan.benefit}</TableCell>
-                <TableCell align="center" sx={{ padding: '4px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{plan.coverType}</TableCell>
-                <TableCell align="center" sx={{ padding: '4px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.coverAmount)}</TableCell>
-                <TableCell align="center" sx={{ padding: '4px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.premium)}</TableCell>
-                <TableCell align="center" sx={{ padding: '4px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>
-                  <Button align="center"
-                    variant="contained"
-                    color="5"
-                    
-                    onClick={() => setFormDataStep0Medical({ ...formDataStep0Medical, selectedPlan: plan.id })}
-                  >
-                      {plan.id === formDataStep0Medical.selectedPlan &&
-                        <CheckCircleOutlineIcon /> 
-                          }
-                          {plan.id !== formDataStep0Medical.selectedPlan &&
-                          <CheckBoxOutlineBlankIcon />
-                          }
-                  </Button>
+                onClick={() => {
+                  setFormDataStep0Medical((prevData) => ({
+                    ...prevData,
+                    [`selectedPlan${category}`]: plan.id,
+                  }));
+                  computeRatesOnSelect(selectedPlan,dependantCount,MedicalPlans,coverType,category);
+                }}
+                >
+                <TableCell align="center"  sx={{ padding: '7px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{plan.plan}</TableCell>
+                <TableCell align="center"  sx={{ padding: '7px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{plan.benefit}</TableCell>
+                <TableCell align="center"  sx={{ padding: '7px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.coverAmount)}</TableCell>
+                <TableCell align="center"  sx={{ padding: '7px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.premium)}</TableCell>
+                <TableCell align="center"  sx={{ padding: '7px', color: plan.id === selectedPlan ? 'white' : 'inherit' }}>
+              
+                   {  plan.id === formDataStep0Medical[`selectedPlan${category}`] ? (
+                    <CheckCircleOutlineIcon sx={{ color: 'white' }} />
+                  ) : (
+                    <CheckBoxOutlineBlankIcon />
+                  )}
+                 
                 </TableCell>
               </TableRow>
             ))}
           </>
         );
-
-        const formatNumberWithCommas = (amount) => {
-          return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        };
+        
           // convertor Function
           const convertAmount = (amount) => {
             // Remove commas and convert to number
@@ -67,58 +106,82 @@ const Step0Medical = ({
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
+             convertedAmount =`Ksh. ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString() }`;
             }
             else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`$ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`€ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`£ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             return convertedAmount;
           };
 
-          useEffect(() => {
-            const selectedPlan = MedicalPlans.find(plan => plan.id === formDataStep0Medical.selectedPlan);
-            if(formDataStep0Medical.coverType === 'per-person'){
+
+          const computeRatesOnSelect = (selectedPlanId,dependantCount,MedicalPlans,coverType,category) =>{
+             let selectedPlan= null;
+             selectedPlan = MedicalPlans.find(plan => plan.id === selectedPlanId);
+           
+            if(coverType === 'per-person'){
             if (selectedPlan) {
-              const totalAmount = (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + (Number(formDataStep0Medical.dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(formDataStep0Medical.dependantCount) + 1 ))  ) +(40);
+              const totalAmount = (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + (Number(dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(dependantCount) + 1 ))  ) +(40);
+             
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
-                totalAmount
+                [`totalAmount${category}`]:totalAmount
               })); 
-              const premium =  (Number(formDataStep0Medical.dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(formDataStep0Medical.dependantCount) + 1 ))  );
+
+              const { coverAmount, premium } = selectedPlan;   
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
-                premium
+                coverAmount: Number(coverAmount),    
+                [`premium${category}`]: premium,
+                [`coverAmount${category}`]: Number(coverAmount),
+                
+              }));
+
+              const premiumDisplay =  (Number(dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(dependantCount) + 1 ))  );
+              setFormDataStep0Medical(prevState => ({
+                ...prevState,
+                [`premiumDisplay${category}`]:premiumDisplay
               })); 
 
 
             }
           } else {
             if (selectedPlan) {
-              const totalAmount = (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + ((Number(formDataStep0Medical.dependantCount) === 0 || !formDataStep0Medical.dependantCount) ? Number(selectedPlan.premium) : (Number(selectedPlan.premium)) ) +(40);
+              const totalAmount = (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + ((Number(dependantCount) === 0 || !dependantCount) ? Number(selectedPlan.premium) : (Number(selectedPlan.premium)) ) +(40);
+             
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
-                totalAmount
+                [`totalAmount${category}`]:totalAmount
               })); 
-              const premium = (Number(selectedPlan.premium)) 
+
+              const { coverAmount, premium } = selectedPlan;   
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
-                premium
+                coverAmount: Number(coverAmount),    
+                [`premium${category}`]: premium,
+                [`coverAmount${category}`]: Number(coverAmount),
+
+              }));
+              
+
+              const premiumDisplay = (Number(selectedPlan.premium)) ;
+              setFormDataStep0Medical(prevState => ({
+                ...prevState,
+                [`premiumDisplay${category}`]:premiumDisplay
               })); 
-
-
-            }
-          }
-          }, [formDataStep0Medical.selectedPlan,setFormDataStep0Medical ,formDataStep0Medical.dependantCount,formDataStep0Medical.coverType,  MedicalPlans]);
-      
+             }
+              } }
+          
+         
       
     return (
       <div className="bg-white p-2 shadow-div shadow-3xl  mt-1">
@@ -128,8 +191,6 @@ const Step0Medical = ({
             
             <h5 className='font-semibold'>Medical</h5>  
           </div>
-
-          
   
           
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 mb-2 gap-2">
@@ -234,17 +295,17 @@ const Step0Medical = ({
                 <TableRow style={{ backgroundColor: '#157EBC', color: 'white' }}>
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold',padding: '8px' }}>Plan</TableCell>
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold',padding: '8px' }}>Benefit</TableCell>
-                  <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold',padding: '8px' }}>Cover Type</TableCell>
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold' ,padding: '8px'}}>Cover Amount</TableCell>
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold',padding: '8px' }}>Premium (Base)</TableCell>
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold' ,padding: '8px'}}>Select</TableCell>
                 </TableRow>
               </TableHead>
+              
               <TableBody>
-                {renderCategory('Inpatient', MedicalPlans.filter(plan => plan.benefit === 'Inpatient'), formDataStep0Medical.selectedPlan)}
-                {renderCategory('Outpatient', MedicalPlans.filter(plan => plan.benefit === 'Outpatient'), formDataStep0Medical.selectedPlan)}
-                {renderCategory('Dental', MedicalPlans.filter(plan => plan.benefit === 'Dental'), formDataStep0Medical.selectedPlan)}
-                {renderCategory('Optical', MedicalPlans.filter(plan => plan.benefit === 'Optical'), formDataStep0Medical.selectedPlan)}
+                {renderCategory('Inpatient', MedicalPlans.filter(plan => plan.benefit === 'Inpatient'), formDataStep0Medical.selectedPlanInpatient, formDataStep0Medical.dependantCount,formDataStep0Medical.coverType,MedicalPlans)}
+                {renderCategory('Outpatient', MedicalPlans.filter(plan => plan.benefit === 'Outpatient'), formDataStep0Medical.selectedPlanOutpatient, formDataStep0Medical.dependantCount,formDataStep0Medical.coverType,MedicalPlans)}
+                {renderCategory('Dental', MedicalPlans.filter(plan => plan.benefit === 'Dental'), formDataStep0Medical.selectedPlanDental, formDataStep0Medical.dependantCount,formDataStep0Medical.coverType,MedicalPlans)}
+                {renderCategory('Optical', MedicalPlans.filter(plan => plan.benefit === 'Optical'), formDataStep0Medical.selectedPlanOptical, formDataStep0Medical.dependantCount,formDataStep0Medical.coverType,MedicalPlans)}
               </TableBody>
             </Table>
           </TableContainer>
@@ -255,29 +316,30 @@ const Step0Medical = ({
   
           {/* Container for two-column layout on large screens */}
           <div className="mt-6 flex flex-col lg:flex-row lg:gap-6">
+            
             {/* Product Summary */}
-            {formDataStep0Medical.selectedPlan && (
+            {formDataStep0Medical.selectedPlanInpatient && (
                 <div className="flex flex-col p-4 border rounded-lg shadow-md bg-white lg:w-1/2">
                     <div className="border-b border-gray-300 pb-2 mb-2">
-                    <h2 className="text-xl font-semibold mb-4">Premium Summary</h2>
+                    <h5 className=" font-semibold mb-4">Premium Summary</h5>
                     </div>
                     <div className="flex flex-col gap-4 text-sm text-gray-700">
                     {/* Display summary based on selected plan and benefit */}
-                    {MedicalPlans.filter(plan => plan.id === formDataStep0Medical.selectedPlan).map(plan => (
+                    {MedicalPlans.filter(plan => plan.id === formDataStep0Medical.selectedPlanInpatient).map(plan => (
                         <div key={plan.id}>
                         <h3 className="font-medium font-semibold   ">{plan.benefit} Premium Summary</h3>
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
                             <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh. {formDataStep0Medical.premium}</span>
+                            <span>Ksh. {formDataStep0Medical["premiumDisplayInpatient"]}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{(0.002 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
+                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayInpatient"])).toFixed(2) || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{(0.0025 * Number(plan.premium).toFixed(2))  || 'N/A'}</span>
+                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayInpatient"])).toFixed(2)  || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                               <span className="font-medium">Stamp Duty</span>
@@ -285,7 +347,127 @@ const Step0Medical = ({
                             </div>
                             <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh { formatNumberWithCommas(Number(formDataStep0Medical.totalAmount)) || 'N/A'}</b></span>
+                            <span><b>Ksh { Number(formDataStep0Medical[`totalAmountInpatient`]).toLocaleString() || 'N/A'}</b></span>
+                            </div>
+                        </div>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                )}
+
+
+              {formDataStep0Medical.selectedPlanOutpatient && (
+                <div className="flex flex-col p-4 border rounded-lg shadow-md bg-white lg:w-1/2">
+                    <div className="border-b border-gray-300 pb-2 mb-2">
+                    <h5 className=" font-semibold mb-4">Premium Summary</h5>
+
+                    </div>
+                    <div className="flex flex-col gap-4 text-sm text-gray-700">
+                    {/* Display summary based on selected plan and benefit */}
+                    {MedicalPlans.filter(plan => plan.id === formDataStep0Medical.selectedPlanOutpatient).map(plan => (
+                        <div key={plan.id}>
+                        <h3 className="font-medium font-semibold   ">{plan.benefit} Premium Summary</h3>
+                        <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
+                            <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">Premium</span>
+                            <span>Ksh. {formDataStep0Medical["premiumDisplayOutpatient"]}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">ITL</span>
+                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayOutpatient"])).toFixed(2) || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">PCF</span>
+                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayOutpatient"])).toFixed(2)  || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                              <span className="font-medium">Stamp Duty</span>
+                              <span>{ 40 || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                            <span className="font-medium">TOTAL</span>
+                            <span><b>Ksh { Number(formDataStep0Medical[`totalAmountOutpatient`]).toLocaleString() || 'N/A'}</b></span>
+                            </div>
+                        </div>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                )}
+
+
+            {formDataStep0Medical.selectedPlanDental && (
+                <div className="flex flex-col p-4 border rounded-lg shadow-md bg-white lg:w-1/2">
+                    <div className="border-b border-gray-300 pb-2 mb-2">
+                    <h5 className=" font-semibold mb-4">Premium Summary</h5>
+
+                    </div>
+                    <div className="flex flex-col gap-4 text-sm text-gray-700">
+                    {/* Display summary based on selected plan and benefit */}
+                    {MedicalPlans.filter(plan => plan.id === formDataStep0Medical.selectedPlanDental).map(plan => (
+                        <div key={plan.id}>
+                        <h3 className="font-medium font-semibold   ">{plan.benefit} Premium Summary</h3>
+                        <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
+                            <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">Premium</span>
+                            <span>Ksh. {formDataStep0Medical["premiumDisplayDental"]}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">ITL</span>
+                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayDental"])).toFixed(2) || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">PCF</span>
+                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayDental"])).toFixed(2)  || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                              <span className="font-medium">Stamp Duty</span>
+                              <span>{ 40 || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                            <span className="font-medium">TOTAL</span>
+                            <span><b>Ksh { Number(formDataStep0Medical[`totalAmountDental`]).toLocaleString() || 'N/A'}</b></span>
+                            </div>
+                        </div>
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                )}
+
+
+              {formDataStep0Medical.selectedPlanOptical && (
+                <div className="flex flex-col p-4 border rounded-lg shadow-md bg-white lg:w-1/2">
+                    <div className="border-b border-gray-300 pb-2 mb-2">
+                    <h5 className=" font-semibold mb-4">Premium Summary</h5>
+
+                    </div>
+                    <div className="flex flex-col gap-4 text-sm text-gray-700">
+                    {/* Display summary based on selected plan and benefit */}
+                    {MedicalPlans.filter(plan => plan.id === formDataStep0Medical.selectedPlanOptical).map(plan => (
+                        <div key={plan.id}>
+                        <h3 className="font-medium font-semibold   ">{plan.benefit} Premium Summary</h3>
+                        <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
+                            <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">Premium</span>
+                            <span>Ksh. {formDataStep0Medical["premiumDisplayOptical"]}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">ITL</span>
+                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayOptical"])).toFixed(2) || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                            <span className="font-medium">PCF</span>
+                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayOptical"])).toFixed(2)  || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
+                              <span className="font-medium">Stamp Duty</span>
+                              <span>{ 40 || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                            <span className="font-medium">TOTAL</span>
+                            <span><b>Ksh { Number(formDataStep0Medical[`totalAmountOptical`]).toLocaleString() || 'N/A'}</b></span>
                             </div>
                         </div>
                         </div>

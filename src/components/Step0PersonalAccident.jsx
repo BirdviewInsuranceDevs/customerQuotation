@@ -19,9 +19,7 @@ const Step0PersonalAccident = ({
         PersonalAccidentPlans 
       }) => {  
 
-        const formatNumberWithCommas = (amount) => {
-          return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        };
+         
           // convertor Function
           const convertAmount = (amount) => {
             // Remove commas and convert to number
@@ -29,18 +27,18 @@ const Step0PersonalAccident = ({
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
+             convertedAmount =`Ksh. ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString() }`;
             }
             else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`$ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`€ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`£ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             return convertedAmount;
@@ -54,6 +52,15 @@ const Step0PersonalAccident = ({
                 ...prevState,
                 totalAmount
               })); 
+
+
+              const { coverAmount, premium } = selectedPlan;   
+              setFormDataStep0PersonalAccident(prevState => ({
+                ...prevState,
+                coverAmount: Number(coverAmount),  
+                premium: Number(premium)  
+              }));
+
             }
           }, [formDataStep0PersonalAccident.selectedPlan,setFormDataStep0PersonalAccident, PersonalAccidentPlans]);
           
@@ -156,24 +163,19 @@ const Step0PersonalAccident = ({
                         backgroundColor: plan.id === formDataStep0PersonalAccident.selectedPlan ? '#388e3c' : 'inherit',
                         color: plan.id === formDataStep0PersonalAccident.selectedPlan ? '#ffffff' : 'inherit',
                       }}
+                      onClick={() => setFormDataStep0PersonalAccident({ ...formDataStep0PersonalAccident, selectedPlan: plan.id })}
+
                     >
                       <TableCell align="center" sx={{color: plan.id === formDataStep0PersonalAccident.selectedPlan ? 'white' : 'inherit' }}>{plan.plan}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0PersonalAccident.selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.coverAmount)}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0PersonalAccident.selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.premium)}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0PersonalAccident.selectedPlan ? 'white' : 'inherit' }}>
-                        <Button
-                          variant="contained"
-                          color="4"
-                          size="small"
-                          sx={{ minWidth: '20px', padding: '2px 4px', fontSize: '0.75rem' }}
-                          onClick={() => setFormDataStep0PersonalAccident({ ...formDataStep0PersonalAccident, selectedPlan: plan.id })}
-                        >
+                       
                           {plan.id === formDataStep0PersonalAccident.selectedPlan ? (
                             <CheckCircleOutlineIcon />
                           ) : (
                             <CheckBoxOutlineBlankIcon />
                           )}
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -201,7 +203,7 @@ const Step0PersonalAccident = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t ">
                           <div className="flex justify-between border-b  pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh {formatNumberWithCommas(plan.premium)|| 'N/A'}</span>
+                            <span>Ksh {Number(plan.premium).toLocaleString()|| 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
@@ -217,7 +219,7 @@ const Step0PersonalAccident = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh {formatNumberWithCommas(Number(formDataStep0PersonalAccident.totalAmount)) || 'N/A'}</b></span>
+                            <span><b>Ksh { Number(formDataStep0PersonalAccident.totalAmount).toLocaleString() || 'N/A'}</b></span>
                           </div>
                         </div>
                       </div>

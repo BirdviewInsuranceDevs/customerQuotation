@@ -17,10 +17,7 @@ const Step0HospitalCash = ({
         setErrors,
         HospitalCashPlans 
       }) => {  
-
-        const formatNumberWithCommas = (amount) => {
-          return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        };
+ 
           // convertor Function
           const convertAmount = (amount) => {
             // Remove commas and convert to number
@@ -28,18 +25,18 @@ const Step0HospitalCash = ({
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-             convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
+             convertedAmount =`Ksh. ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString() }`;
             }
             else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-             convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`$ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-             convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`€ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-             convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+             convertedAmount =`£ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
       
             }
             return convertedAmount;
@@ -55,10 +52,17 @@ const Step0HospitalCash = ({
                 totalAmount
               })); 
 
-              const premium =  (Number(formDataStep0HospitalCash.dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(formDataStep0HospitalCash.dependantCount) + 1 ))  );
+              const { coverAmount, premium } = selectedPlan;  // Extract both coverAmount and premium
               setFormDataStep0HospitalCash(prevState => ({
                 ...prevState,
-                premium
+                coverAmount,  // Set the cover amount
+                premium: Number(premium)  // Set the premium as a number
+              }));
+
+              const premiumDisplay =  (Number(formDataStep0HospitalCash.dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(formDataStep0HospitalCash.dependantCount) + 1 ))  );
+              setFormDataStep0HospitalCash(prevState => ({
+                ...prevState,
+                premiumDisplay
               })); 
             }
           } else {
@@ -68,16 +72,21 @@ const Step0HospitalCash = ({
                 ...prevState,
                 totalAmount
               })); 
-              const premium = (Number(selectedPlan.premium)) 
+              
+              const { coverAmount, premium } = selectedPlan;   
               setFormDataStep0HospitalCash(prevState => ({
                 ...prevState,
-                premium
+                coverAmount: Number(coverAmount),  
+                premium: Number(premium)  
+              }));
+
+              const premiumDisplay = (Number(selectedPlan.premium)) ;
+              setFormDataStep0HospitalCash(prevState => ({
+                ...prevState,
+                premiumDisplay
               })); 
             }
-
-
           }
-
           }, [formDataStep0HospitalCash.selectedPlan,setFormDataStep0HospitalCash ,formDataStep0HospitalCash.dependantCount,formDataStep0HospitalCash.coverType,  HospitalCashPlans]);
       
     return (
@@ -205,24 +214,18 @@ const Step0HospitalCash = ({
                         backgroundColor: plan.id === formDataStep0HospitalCash.selectedPlan ? '#388e3c' : 'inherit',
                         color: plan.id === formDataStep0HospitalCash.selectedPlan ? '#ffffff' : 'inherit',
                       }}
+                      onClick={() => setFormDataStep0HospitalCash({ ...formDataStep0HospitalCash, selectedPlan: plan.id })}
                     >
                       <TableCell  align="center"  sx={{color: plan.id === formDataStep0HospitalCash.selectedPlan ? 'white' : 'inherit' }}>{plan.plan}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0HospitalCash.selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.coverAmount)}</TableCell>
                       <TableCell align="center"  sx={{color: plan.id === formDataStep0HospitalCash.selectedPlan ? 'white' : 'inherit' }}>{convertAmount(plan.premium)}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0HospitalCash.selectedPlan ? 'white' : 'inherit' }}>
-                        <Button
-                          variant="contained"
-                          color="424242"
-                          size="small"
-                          sx={{ minWidth: '20px', padding: '2px 4px', fontSize: '0.75rem' }}
-                          onClick={() => setFormDataStep0HospitalCash({ ...formDataStep0HospitalCash, selectedPlan: plan.id })}
-                        >
+                       
                           {plan.id === formDataStep0HospitalCash.selectedPlan ? (
                             <CheckCircleOutlineIcon />
                           ) : (
                             <CheckBoxOutlineBlankIcon />
                           )}
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -250,7 +253,7 @@ const Step0HospitalCash = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t ">
                           <div className="flex justify-between border-b  pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh. {formDataStep0HospitalCash.premium || 'N/A'}</span>
+                            <span>Ksh. {formDataStep0HospitalCash.premiumDisplay || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
@@ -266,7 +269,7 @@ const Step0HospitalCash = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh {formatNumberWithCommas(Number(formDataStep0HospitalCash.totalAmount)) || 'N/A'}</b></span>
+                            <span><b>Ksh { Number(formDataStep0HospitalCash.totalAmount).toLocaleString() || 'N/A'}</b></span>
                           </div>
                         </div>
                       </div>

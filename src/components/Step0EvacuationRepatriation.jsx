@@ -18,9 +18,7 @@ const Step0EvacuationRepatriation  = ({
 }) => {
   
 
-  const formatNumberWithCommas = (amount) => {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
+   
     // convertor Function
     const convertAmount = (amount) => {
       // Remove commas and convert to number
@@ -28,18 +26,18 @@ const Step0EvacuationRepatriation  = ({
       // Convert to selected currency
       let convertedAmount ='';
       if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
-       convertedAmount =`Ksh. ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)) }`;
+       convertedAmount =`Ksh. ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString() }`;
       }
       else if(contactAndLoginsAndCurrency.currency === 'USD' ){ 
-       convertedAmount =`$ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+       convertedAmount =`$ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
 
       }
       else if(contactAndLoginsAndCurrency.currency === 'EUR' ){ 
-       convertedAmount =`€ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+       convertedAmount =`€ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
 
       }
       else if(contactAndLoginsAndCurrency.currency === 'GBP' ){ 
-       convertedAmount =`£ ${formatNumberWithCommas((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2))}`;
+       convertedAmount =`£ ${Number((amountclean * conversionRates[contactAndLoginsAndCurrency.currency]).toFixed(2)).toLocaleString()}`;
 
       }
       return convertedAmount;
@@ -54,6 +52,14 @@ const Step0EvacuationRepatriation  = ({
           ...prevState,
           totalAmount
         })); 
+
+        const { coverAmount, premium } = selectedPlan;  
+        setFormDataStep0EvacuationRepatriation(prevState => ({
+          ...prevState,
+          coverAmount: Number(coverAmount),  
+          premium: Number(premium)   
+        }));
+
       }
     }, [formDataStep0EvacuationRepatriation.selectedPlan,setFormDataStep0EvacuationRepatriation, EvacuationRepatriationPlans]);
     
@@ -158,32 +164,27 @@ const Step0EvacuationRepatriation  = ({
                         backgroundColor: plan.id === formDataStep0EvacuationRepatriation.selectedPlan ? '#388e3c' : 'inherit',
                         color: plan.id === formDataStep0EvacuationRepatriation.selectedPlan ? '#388e3c' : 'inherit',
                       }}
+                      onClick={() => {
+                        setFormDataStep0EvacuationRepatriation({ ...formDataStep0EvacuationRepatriation, selectedPlan: plan.id });
+                        setErrors((prevErrors) => ({
+                          ...prevErrors,
+                          selectedPlan: '',
+                        }));
+                      }}
                     >
                       <TableCell align="center" sx={{color: plan.id === formDataStep0EvacuationRepatriation.selectedPlan ? 'white' : 'inherit' }} >{plan.plan}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0EvacuationRepatriation.selectedPlan ? 'white' : 'inherit' }} >{convertAmount(plan.coverAmount)}</TableCell>
                       <TableCell align="center" sx={{color: plan.id === formDataStep0EvacuationRepatriation.selectedPlan ? 'white' : 'inherit' }} >{convertAmount(plan.premium)}</TableCell>
                       <TableCell align="center"  sx={{color: plan.id === formDataStep0EvacuationRepatriation.selectedPlan ? 'white' : 'inherit' }} >
 
-                      <Button
-                          variant="contained"
-                          color="424242"
-                          size="small" 
-                          sx={{ minWidth: '20px', padding: '2px 4px', fontSize: '0.75rem' }}  
-                          onClick={() => {
-                            setFormDataStep0EvacuationRepatriation({ ...formDataStep0EvacuationRepatriation, selectedPlan: plan.id });
-                            setErrors((prevErrors) => ({
-                              ...prevErrors,
-                              selectedPlan: '',
-                            }));
-                          }}
-                        >
+                    
                           {plan.id === formDataStep0EvacuationRepatriation.selectedPlan &&
                         <CheckCircleOutlineIcon /> 
                           }
                           {plan.id !== formDataStep0EvacuationRepatriation.selectedPlan &&
                           <CheckBoxOutlineBlankIcon />
                           }
-                        </Button>
+                      
                       </TableCell>
                     </TableRow>
                   ))}
@@ -211,7 +212,7 @@ const Step0EvacuationRepatriation  = ({
                     <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
                       <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
                         <span className="font-medium">Premium</span>
-                        <span>Ksh {formatNumberWithCommas(plan.premium) || 'N/A'}</span>
+                        <span>Ksh { Number(formDataStep0EvacuationRepatriation.premium).toLocaleString() || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                         <span className="font-medium">ITL</span>
@@ -219,7 +220,7 @@ const Step0EvacuationRepatriation  = ({
                       </div>
                       <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                         <span className="font-medium">PCF</span>
-                        <span>{(0.0025 * Number(plan.premium).toFixed(2)) || 'N/A'}</span>
+                        <span>{(0.0025 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                         <span className="font-medium">Stamp Duty</span>
@@ -227,7 +228,7 @@ const Step0EvacuationRepatriation  = ({
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium">TOTAL</span>
-                        <span><b>Ksh {formatNumberWithCommas(Number(formDataStep0EvacuationRepatriation.totalAmount)) || 'N/A'}</b></span>
+                        <span><b>Ksh { Number(formDataStep0EvacuationRepatriation.totalAmount).toLocaleString() || 'N/A'}</b></span>
                       </div>
                     </div>
                   </div>
