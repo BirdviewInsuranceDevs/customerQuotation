@@ -223,6 +223,8 @@ const Step2 = () => {
                 // Check for personalAccident condition
                 if (dependant.personalAccident) {
                     const personalAccidentPlan = storedPlans.personalAccident;
+                    const hospitalCashPlan = storedPlans.hospitalCash; //added this line, error was hospitalcashPlan is not defined
+
                     dependant.personalAccidentData = {
                         coverType: personalAccidentPlan.coverType,
                         policyStartDate: personalAccidentPlan.policyStartDate,
@@ -371,7 +373,7 @@ const Step2 = () => {
                 const confirmPersonalAccident = doubleCheckPeronalAccident?.personalAccident?.isActive;
                 if (confirmPersonalAccident){
                 const data = JSON.parse(localStorage.getItem('QuotationData'));
-                  data.proposerHistoryData 
+                //   data.proposerHistoryData  // commented this line , is there supposed to be an assignment?
                   
                     // Clear local Storage Data
                     localStorage.removeItem('QuotationData');

@@ -1,17 +1,11 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    './src/**/*.{js,jsx,ts,tsx}',
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {
-      colors: {
-        'step-active': '#ffffff',  
-        'step-inactive': '#cfcfcf',  
-      },
-    },
+    extend: {},
   },
   plugins: [],
 }
-
 
