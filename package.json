@@ -1,6 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
+  "homepage": "https://quote.birdviewinsurance.com",
   "private": true,
   "dependencies": {
     "@date-io/date-fns": "^3.0.0",
@@ -12,6 +13,8 @@
     "@mui/material": "^6.1.4",
     "@mui/x-charts": "^7.20.0",
     "@mui/x-date-pickers": "^7.20.0",
+    "@stripe/react-stripe-js": "^2.8.1",
+    "@stripe/stripe-js": "^4.8.0",
     "@testing-library/jest-dom": "^6.6.1",
     "@testing-library/react": "^16.0.1",
     "@testing-library/user-event": "^14.5.2",

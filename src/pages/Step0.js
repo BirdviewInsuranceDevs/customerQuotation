@@ -10,7 +10,8 @@ import { Alert } from '@mui/material';
 import dayjs from 'dayjs';  
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
-
+import Snackbar from '@mui/material/Snackbar';
+ 
 
 const Step0 = () => {
       // State to manage the active step
@@ -76,7 +77,8 @@ const Step0 = () => {
           [name]: checked,
         }));
       };
-      
+
+
       // convertion Rates
       const conversionRates = {
         KES: 1,
@@ -233,6 +235,20 @@ const Step0 = () => {
             const [errorsHospitalCash, setErrorsHospitalCash] = useState({});
             const [errorsPersonalAccident, setErrorsPersonalAccident] = useState({});
 
+            // Alert Snackbar for all Erro Messages
+            const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+            // Function to handle closing of Snackbar
+            const handleCloseSnackbar = (event, reason) => {
+              if (reason === 'clickaway') {
+                return; // Prevent closing on clickaway if you don't want that behavior
+              }
+              setSnackbarOpen(false);
+            };
+
+       
+            
+         
+
             // Validation function for each step
             const validateStep = () => {
 
@@ -307,11 +323,15 @@ const Step0 = () => {
               }}
 
               
+
+
+              
            // Step 1 validation For Medical Forms
           if (activeStep === 0 && checkedAddProductItems.medical === true ) {
                // Reseting the stored value in Step 0
                step1RefStoredData.current = {};
-               if (!formDataStep0Medical.coverType) tempErrorsLastExpense.coverType = 'Cover Type is required.';
+              if (!formDataStep0Medical.coverType) tempErrorsMedical.coverType = 'Cover Type is required.';
+
               if (formDataStep0Medical.dependantCount > 10) tempErrorsMedical.dependantCount = 'Dependant Count should not exceed 10';
               // Check if the dependants count is a number and greater than 0
               if (formDataStep0Medical.dependantCount && (isNaN(formDataStep0Medical.dependantCount) || formDataStep0Medical.dependantCount < 0)) { 
@@ -337,9 +357,10 @@ const Step0 = () => {
               }
               
               // Selected Plan validation
-              if (formDataStep0Medical.selectedPlan === null ) {
-                tempErrorsMedical.selectedPlan = 'You must select a plan before proceeding.';
+              if ( formDataStep0Medical.selectedPlanInpatient === null && formDataStep0Medical.selectedPlanOutpatient === null &&   formDataStep0Medical.selectedPlanDental === null && formDataStep0Medical.selectedPlanOptical ===null  ) {
+                tempErrorsMedical.selectedPlan = 'You must select at least one plan before proceeding.';
               } }
+
 
                 // Step 1 validation For Hospital Cash Forms
           if (activeStep === 0 && checkedAddProductItems.hospitalCash === true ) {
@@ -366,17 +387,17 @@ const Step0 = () => {
             // Ensure the policyStartDate is not null and is a valid Dayjs object
             if (!formattedPolicyStartDate) {
             // Handle null case
-            tempErrorsEvacuationRepatriation.policyStartDate = 'Policy Start Date is required.';
+            tempErrorsHospitalCash.policyStartDate = 'Policy Start Date is required.';
             } else if (!dayjs(formattedPolicyStartDate).isValid()) {
             // Handle invalid date format
-            tempErrorsEvacuationRepatriation.policyStartDate = 'Policy Start Date is invalid.';
+            tempErrorsHospitalCash.policyStartDate = 'Policy Start Date is invalid.';
             } else {
             // Convert to 'YYYY-MM-DD' for comparison
             formattedPolicyStartDate = dayjs(formattedPolicyStartDate).format('YYYY-MM-DD');
             
             // Check if the date is in the past
             if (formattedPolicyStartDate < today) {
-                tempErrorsEvacuationRepatriation.policyStartDate = 'Policy Start Date cannot be in the past.';
+              tempErrorsHospitalCash.policyStartDate = 'Policy Start Date cannot be in the past.';
             }
             }
            // Selected Plan validation
@@ -420,8 +441,24 @@ const Step0 = () => {
             setErrorsMedical(tempErrorsMedical);
             setErrorsHospitalCash(tempErrorsHospitalCash);
             setErrorsPersonalAccident(tempErrorsPersonalAccident);
+ 
+              if(Object.keys(tempErrorsGeneralProducts).length > 0 || 
+               Object.keys(tempErrorsEvacuationRepatriation).length > 0 || 
+               Object.keys(tempErrorsLastExpense).length > 0 || 
+               Object.keys(tempErrorsMedical).length > 0 || 
+               Object.keys(tempErrorsHospitalCash).length > 0 || 
+               Object.keys(tempErrorsPersonalAccident).length > 0){
+ 
+                  setSnackbarOpen(true);
+               }
+  
            
-            return ((Object.keys(tempErrorsGeneralProducts).length === 0) && (Object.keys(tempErrorsEvacuationRepatriation).length === 0) && (Object.keys(tempErrorsLastExpense).length === 0) && (Object.keys(tempErrorsMedical).length === 0) && (Object.keys(tempErrorsHospitalCash).length === 0) && (Object.keys(tempErrorsLastExpense).length === 0) && (Object.keys(tempErrorsMedical).length === 0)  );
+            return ((Object.keys(tempErrorsGeneralProducts).length === 0) && 
+            (Object.keys(tempErrorsEvacuationRepatriation).length === 0) && 
+            (Object.keys(tempErrorsLastExpense).length === 0) && 
+            (Object.keys(tempErrorsMedical).length === 0) && 
+            (Object.keys(tempErrorsHospitalCash).length === 0) && 
+            (Object.keys(tempErrorsPersonalAccident).length === 0)  );
           };
 
             // Initialize ref for step1
@@ -505,7 +542,6 @@ const Step0 = () => {
                         premiumInpatient:formDataStep0Medical.premiumInpatient || "",
                         premiumDental:formDataStep0Medical.premiumDental || "",
                         premiumOptical:formDataStep0Medical.premiumOptical || "",
-                        coverAmount: formDataStep0Medical.coverAmount || "" ,
                         coverAmountOutpatient: formDataStep0Medical.coverAmountOutpatient || "",
                         coverAmountInpatient:formDataStep0Medical.coverAmountInpatient || "",
                         coverAmountDental:formDataStep0Medical.coverAmountDental || "",
@@ -590,6 +626,7 @@ const Step0 = () => {
                         firstName: contactAndLoginsAndCurrency.firstName,
                         currency: contactAndLoginsAndCurrency.currency,
                         email: contactAndLoginsAndCurrency.email,
+                        currencyRate: conversionRates[contactAndLoginsAndCurrency.currency]
                     }
                     addFormData('contactAndLoginsAndCurrency', contactAndLoginsAndCurrencyData)
                     // Update checkedAddProductItems
@@ -785,9 +822,9 @@ const Step0 = () => {
            {/* Checkboxes */}
            <div className="mt-2 shadow-div shadow-xl p-3">
             <h5 className="font-semibold mb-2">Add Other Products</h5>
-            <div className='flex justify-center' >
+            <div className='flex justify-center mb-4' >
             {!isAnyProductSelected() && (
-              <Alert severity="info">
+              <Alert severity="error">
              Please select at least one product.
             </Alert>
             )}
@@ -874,6 +911,22 @@ const Step0 = () => {
 
         </div>
       </div>
+
+     
+       
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar} // Close the Snackbar after autoHideDuration
+      >
+        <Alert severity="info" sx={{ width: '100%' }} onClose={handleCloseSnackbar}>
+          Please ensure all required fields are filled out correctly before proceeding .
+        </Alert>
+      </Snackbar>
+       
+     
+    
+
     </div>
   );
 };

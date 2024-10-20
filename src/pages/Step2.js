@@ -68,12 +68,17 @@ const Step2 = () => {
     const [dependantData, setDependantData] = useState([]);
     const [dependantFirstNames, setDependantFirstNames] = useState([]);
     const data = JSON.parse(localStorage.getItem('step1'));
+   
     const evacuationRepatriationActive = data?.evacuationRepatriation?.isActive;
     const lastExpenseActive = data?.lastExpense?.isActive;
     const medicalActive = data?.medical?.isActive;
     const hospitalCashActive = data?.hospitalCash?.isActive;
     const personalAccidentActive = data?.personalAccident?.isActive;
     const [proposerHistoryData, setProposerHistoryData] = useState([]);
+    const [showDeclineMessage, setShowDeclineMessage] = useState(false);
+    // Holder Name
+    const data2 = JSON.parse(localStorage.getItem('step2'));
+    const firstName = data2?.firstName;
   
     
 
@@ -147,7 +152,6 @@ const Step2 = () => {
                         premiumOptical:medicalPlan.premiumOptical,
                     };
                 }else if (!dependant.medical) {
-                    const medicalPlan = storedPlans.medical;
                     dependant.medicalData = {
                         coverType: "",
                         policyStartDate: "",
@@ -173,7 +177,6 @@ const Step2 = () => {
                         premium: evacuationPlan.premium
                     };
                 } else if (!dependant.evacuationRepatriation) {
-                    const evacuationPlan = storedPlans.evacuationRepatriation;
                     dependant.evacuationData = {
                         coverType:  "",
                         policyStartDate: "",
@@ -192,7 +195,6 @@ const Step2 = () => {
                         premium: lastExpensePlan.premium
                     };
                 } else if (!dependant.lastExpense) {
-                    const lastExpensePlan = storedPlans.lastExpense;
                     dependant.lastExpenseData = {
                         coverType:  "",
                         policyStartDate:  "",
@@ -211,7 +213,6 @@ const Step2 = () => {
                         premium: hospitalCashPlan.premium
                     };
                 }  if (!dependant.hospitalCash) {
-                    const hospitalCashPlan = storedPlans.hospitalCash;
                     dependant.hospitalCashData = {
                         coverType: "",
                         policyStartDate: "",
@@ -223,16 +224,14 @@ const Step2 = () => {
                 // Check for personalAccident condition
                 if (dependant.personalAccident) {
                     const personalAccidentPlan = storedPlans.personalAccident;
-                    const hospitalCashPlan = storedPlans.hospitalCash; //added this line, error was hospitalcashPlan is not defined
-
+                     
                     dependant.personalAccidentData = {
                         coverType: personalAccidentPlan.coverType,
                         policyStartDate: personalAccidentPlan.policyStartDate,
                         selectedPlan: personalAccidentPlan.selectedPlan,
-                        premium: hospitalCashPlan.premium
+                        premium: personalAccidentPlan.premium
                     };
                 } else if (!dependant.personalAccident) {
-                    const personalAccidentPlan = storedPlans.personalAccident;
                     dependant.personalAccidentData = {
                         coverType: "",
                         policyStartDate: "",
@@ -277,7 +276,10 @@ const Step2 = () => {
                 lastExpense: storedPlans.lastExpense,
                 medical: storedPlans.medical,
                 hospitalCash: storedPlans.hospitalCash,
-                personalAccident: storedPlans.personalAccident
+                personalAccident: storedPlans.personalAccident,
+                contactAndCurrencyData: storedPlans.contactAndLoginsAndCurrency
+                
+
             };
 
             return consolidatedData;
@@ -352,46 +354,57 @@ const Step2 = () => {
      const handleNext = () => {
         // Save the data to local storage
         handleSaveData();
-
-        // Validate proposer's history before moving to the next step
-        let validationErrors = 0;
-           if (personalAccidentActive){
+      
+        // Initialize an empty array for validation errors
+        let validationErrors = [];
+      
+        // Validate proposer's history if personal accident is active
+        if (personalAccidentActive) {
           validationErrors = proposerHistoryDataValidation(proposerHistoryData);
-
-           }
-        // Output the errors, if any
-        if (validationErrors.length > 0) {
-            // Prepare the snackbar message
-            setSnackbarMessage(`Proposers Errors: ${validationErrors.join(', ')}`);
-            setOpenSnackbar(true);  
-          } else {
-            //   TODO: Chech why Pernal Accident is not included
-            // Validate medical history before moving to the next step
-            if (MedicalHistoryValidations()) {
-                // Ifpersonal Accident Active
-                const doubleCheckPeronalAccident = JSON.parse(localStorage.getItem('step1'));
-                const confirmPersonalAccident = doubleCheckPeronalAccident?.personalAccident?.isActive;
-                if (confirmPersonalAccident){
-                const data = JSON.parse(localStorage.getItem('QuotationData'));
-                //   data.proposerHistoryData  // commented this line , is there supposed to be an assignment?
-                  
-                    // Clear local Storage Data
-                    localStorage.removeItem('QuotationData');
-                    // Step 4: Save the updated object back to local storage
-                    localStorage.setItem('QuotationData', JSON.stringify(data));
-
-                     // Proceed to the next step
-                     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                     window.location.reload(); 
-                 }else {
-
-                // Proceed to the next step
-                setActiveStep((prevActiveStep) => prevActiveStep + 1);
-                 window.location.reload(); 
-                 }
-            }
         }
-    };
+      
+        // Check for any validation errors
+        if (validationErrors.length > 0) {
+          // Set snackbar message for the errors
+          setSnackbarMessage(`Proposer's Errors: ${validationErrors.join(', ')}`);
+          setOpenSnackbar(true);
+        } else {
+          // Validate medical history before moving to the next step
+          if (MedicalHistoryValidations()) {
+            setShowDeclineMessage(false);
+
+            
+            // If personal accident is active, update localStorage with proposerHistoryData
+            if (personalAccidentActive) {
+              const data = JSON.parse(localStorage.getItem('QuotationData')) || {};
+              
+              // Ensure proposerHistoryData exists and is correctly updated
+              data.proposerHistoryData = proposerHistoryData;
+      
+              // Remove and update localStorage with the new data
+              localStorage.removeItem('QuotationData');
+              localStorage.setItem('QuotationData', JSON.stringify(data));
+      
+              // Proceed to the next step
+              setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      
+              // Reload the page if necessary
+              window.location.reload();
+            } else {
+              // If personal accident is not active, just proceed to the next step
+              setActiveStep((prevActiveStep) => prevActiveStep + 1);
+      
+              // Reload the page
+              window.location.reload();
+            }
+          } else {
+
+            setShowDeclineMessage(true);
+
+          }
+        }
+      };
+      
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
@@ -400,7 +413,9 @@ const Step2 = () => {
 
     return (
            <>
-           { (evacuationRepatriationActive || lastExpenseActive || medicalActive || hospitalCashActive) &&
+           
+           {/*  Display Only for Evacatuation, Last Expense, Medical and Hospital */}
+           { ((evacuationRepatriationActive || lastExpenseActive || medicalActive || hospitalCashActive ) && !showDeclineMessage ) &&
             <Step2Medicalhistory 
             dependantFirstNames={dependantFirstNames}
             dependantData ={dependantData}
@@ -410,12 +425,55 @@ const Step2 = () => {
             />
             }
 
-            { personalAccidentActive  &&
+             {/*  Display Only for PernalAccident */}
+            { (personalAccidentActive && !showDeclineMessage) &&
             
             <Step2ProposerHistory setProposerHistoryData={setProposerHistoryData} />
             }
+
+            { showDeclineMessage  &&
+
+            <div className="bg-gray-50 p-6 rounded-lg shadow-md">
+            {/* Decline Message Header */}
+            <div className="text-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Quotation Declined</h2>
+            </div>
+
+            {/* Decline Message Body */}
+            <div className="mb-6">
+            <p className="text-gray-700">
+                Dear <span className="font-medium">{firstName} </span>,
+            </p>
+            <p className="text-gray-700 mt-2">
+                Thank you for considering us as your potential insurer. We truly value your interest in our 
+                <span className="font-medium"> {evacuationRepatriationActive  &&  <p> Evacuation And Repatriation</p>} {lastExpenseActive  &&  <p> Last Expense </p>} {medicalActive  &&  <p>Medical</p>} {hospitalCashActive  &&  <p> Hospital Cash</p>} </span>  product(s).
+            </p>
+            <p className="text-gray-700 mt-4">
+                After assessing your application, we regret to inform you that we are unable to proceed with this quotation at the moment. For further discussion or assistance, kindly reach out to our customer service team at 
+                <a href="mailto:customerservice@birdviewinsurance.com" className="text-blue-600 font-medium hover:underline"> customerservice@birdviewinsurance.com</a> or call us at 
+                <a href="tel:+254742222888" className="text-blue-600 font-medium hover:underline"> +254 742 222 888</a>.
+            </p>
+            </div>
+
+          {/* Alert Message */}
+            <div className="flex justify-end">
+            <Button
+                onClick={() => { window.location.href = "https://birdviewmicroinsurance.com/" }}
+                color="error" 
+                variant="contained"  
+            >
+                OK
+            </Button>
+            </div>
+
+
+            </div>
+
+            }
+
             <div className="flex flex-col items-center mb-4">
                 <div className="mt-4 flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
+                { !showDeclineMessage && 
                     <Button
                         startIcon={<KeyboardDoubleArrowLeftIcon />}
                         disabled={activeStep === 0}
@@ -425,15 +483,23 @@ const Step2 = () => {
                     >
                         Back
                     </Button>
+                  }
+  
+                    {/* Hide For Decline Cover */}
+                   { !showDeclineMessage && 
                     <Button
                         endIcon={<DoubleArrowIcon />}
                         variant="contained"
                         color="primary"
                         onClick={handleNext}
                         fullWidth
+                        
+                         
                     >
                         {activeStep === 6 - 1 ? 'Finish' : 'Next'}
                     </Button>
+
+                    }
                 </div>
 
                 <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleClose}>

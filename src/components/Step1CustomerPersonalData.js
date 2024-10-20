@@ -441,10 +441,11 @@ const Step1PersonalData = ({
                     {/* Title */}
                     <div className="flex-1">
                     <FormControl fullWidth variant="outlined" error={!!errors.title}>
-                        <InputLabel id="title-label">Title</InputLabel>
+                        <InputLabel   required id="title-label">Title</InputLabel>
                         <Select
                             labelId="title-label"
                             label="Title"
+                          
                             value={formDataStep1CustomerPersonalDetails.title}
                             onChange={(e) => {
                             setFormDataStep1CustomerPersonalDetails({
@@ -547,7 +548,7 @@ const Step1PersonalData = ({
                     {/* Gender */}
                     <div className="flex-1">
                         <FormControl fullWidth variant="outlined" error={!!errors.gender} >
-                            <InputLabel id="gender-label">Gender</InputLabel>
+                            <InputLabel   required id="gender-label">Gender</InputLabel>
                             <Select labelId="gender-label" label="Gender" required
                              value={formDataStep1CustomerPersonalDetails.gender}
                              onChange={(e) => {

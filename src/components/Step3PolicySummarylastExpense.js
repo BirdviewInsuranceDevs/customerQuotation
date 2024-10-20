@@ -9,13 +9,43 @@ const Step3PolicySummarylastExpense = ({setLastExpenseTotalPremium}) => {
     const [ipcf, setIpcf] = useState();
     const stampDuty = 40;
     const [totalPayedPremium, setTotalPayedPremium] = useState();
+    const [paymentCurrencyType, setPaymentCurrencyType] = useState();
+    const [paymentCurrencyRate, setPaymentCurrencyRate] = useState();
+
+
   
     useEffect(() => {
         // Retrieve the stored data from local storage
         const data = JSON.parse(localStorage.getItem('QuotationData'));
-    
+
+
+         // Check Currency Rate and Assig Rate
+         setPaymentCurrencyRate(data?.contactAndCurrencyData?.currencyRate);
+
         // Check if hospital cash is active
         const lastExpenseActive = data?.lastExpense?.isActive;
+        
+         // Check the currency type and assign the appropriate symbol
+         const currencySymbol = (currency) => {
+            switch (currency) {
+                case 'KES':
+                return 'Ksh.';
+                case 'USD':
+                return '$';
+                case 'EUR':
+                return '€';
+                case 'GBP':
+                return '£';
+                default:
+                return 'Ksh.';  
+            }
+            };
+    
+            // Use the currency check before setting the payment currency type
+            const currencyType = currencySymbol(data?.contactAndCurrencyData?.currency);
+            setPaymentCurrencyType(currencyType);
+    
+   
     
         if (lastExpenseActive) {
             // Extract hospital cash details and set cover amount and policy start date
@@ -76,7 +106,7 @@ const Step3PolicySummarylastExpense = ({setLastExpenseTotalPremium}) => {
                    
                 }
             });
-    
+      
             // Calculate the ITL amount based on the total premium
             const itlRate = 0.002;
             const itlAmount = totalPremium * itlRate;
@@ -91,13 +121,13 @@ const Step3PolicySummarylastExpense = ({setLastExpenseTotalPremium}) => {
             setPremium(totalPremium);
     
             // Calculate the total paid premium by adding the stamp duty
-            setTotalPayedPremium(Number(totalPremium) + Number(stampDuty) + Number(ipcfAmount) + Number(itl)); // Ensure ipcfAmount is used
-            setLastExpenseTotalPremium(Number(totalPremium) + Number(stampDuty) + Number(ipcfAmount) + Number(itl));
+            setTotalPayedPremium(Number(totalPremium) + Number(stampDuty * paymentCurrencyRate) + Number(ipcfAmount) + Number(itl)); // Ensure ipcfAmount is used
+            setLastExpenseTotalPremium(Number(totalPremium) + Number(stampDuty * paymentCurrencyRate) + Number(ipcfAmount) + Number(itl));
         }
-    }, [setPremium, stampDuty, setIpcf, setItl, itl]);
+    }, [setPremium, stampDuty, setIpcf, setItl, itl,setLastExpenseTotalPremium]);
     
 
-    return (
+    return ( 
         <><style>
         {`
           .shadow-div { background-color: white; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 16px; }
@@ -119,7 +149,7 @@ const Step3PolicySummarylastExpense = ({setLastExpenseTotalPremium}) => {
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start border-b border-gray-300 pb-2">
                     <div className="font-bold sm:w-full md:w-1/3">Benefit Limits</div>
-                    <div className="sm:w-full md:w-2/3">KES {coverAmount}</div>
+                    <div className="sm:w-full md:w-2/3">{paymentCurrencyType} {coverAmount}</div>
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start border-b border-gray-300 pb-2">
                     <div className="font-bold sm:w-full md:w-1/3">Summary of Exclusions</div>
@@ -179,23 +209,23 @@ const Step3PolicySummarylastExpense = ({setLastExpenseTotalPremium}) => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Premium</div>
-                        <div>KES {premium}</div>
+                        <div>{paymentCurrencyType} {premium}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">ITL</div>
-                        <div>KES {itl}</div>
+                        <div>{paymentCurrencyType} {itl}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">IPCF</div>
-                        <div>KES {ipcf}</div>
+                        <div>{paymentCurrencyType} {ipcf}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Stamp Duty</div>
-                        <div>KES {stampDuty}</div>
+                        <div>{paymentCurrencyType} {paymentCurrencyRate * stampDuty}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Total</div>
-                        <div className="font-bold">KES {Number(totalPayedPremium)}</div>
+                        <div className="font-bold">{paymentCurrencyType} {Number(totalPayedPremium)}</div>
                     </div>
                 </div>
             </div>

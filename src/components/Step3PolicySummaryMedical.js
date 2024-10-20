@@ -15,6 +15,10 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
     const [totalPayedPremium, setTotalPayedPremium] = useState();
     const [coverType, setCoverType] = useState();
     const [dependantCount, setDependantCount] = useState();
+    const [paymentCurrencyType, setPaymentCurrencyType] = useState();
+    const [paymentCurrencyRate, setPaymentCurrencyRate] = useState();
+
+
 
    
 
@@ -25,6 +29,30 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
     
         // Check if medical is active
         const medicalActive = data?.medical?.isActive;
+
+         // Check Currency Rate and Assig Rate
+         setPaymentCurrencyRate(data?.contactAndCurrencyData?.currencyRate)
+
+
+        // Check the currency type and assign the appropriate symbol
+        const currencySymbol = (currency) => {
+            switch (currency) {
+                case 'KES':
+                return 'Ksh.';
+                case 'USD':
+                return '$';
+                case 'EUR':
+                return '€';
+                case 'GBP':
+                return '£';
+                default:
+                return 'Ksh.';  
+            }
+            };
+    
+            // Use the currency check before setting the payment currency type
+            const currencyType = currencySymbol(data?.contactAndCurrencyData?.currency);
+            setPaymentCurrencyType(currencyType);
     
         if (medicalActive) {
             const medical = data.medical;
@@ -34,7 +62,8 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
             setCoverAmountDental(medical.coverAmountDental);
             setCoverAmountOptical(medical.coverAmountOptical);
             setCoverType(medical.coverType);
-            setDependantCount(medical.dependantCount);
+            let dependantCountCheck = 0;
+          
 
             
             // Set policy start and end date
@@ -50,6 +79,7 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
             const premiums = ['premiumInpatient', 'premiumOutpatient', 'premiumDental', 'premiumOptical'];
     
             // Loop through each premium type and sum them if not an empty string
+            
             premiums.forEach((premiumType) => {
                 const premiumValue = medical[premiumType];
                 totalPremium += premiumValue ? Number(premiumValue) : 0;
@@ -79,7 +109,14 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
                 dependantPremiums.forEach(premiumType => {
                     const premiumValue = dep?.medicalData?.[premiumType];
                     dependantPremium += premiumValue ? Number(premiumValue) : 0;
+
+                    
                 });
+
+                // Calculate the Number of Dependants
+                if (dependantPremium !== 0  ) {
+                    dependantCountCheck++;
+                }
     
                 if (coverType === "per-family") {
                     // If dependant has medical conditions, calculate additional charges
@@ -93,7 +130,11 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
                         });
                         // Add dependant's additional charges to the total premium
                         totalPremium += dependantAdditionalCharges;
+                       
                     }
+
+                 
+
                 } else if (coverType === "per-person") {
                     // If the dependant has medical conditions, calculate additional charges
                     if (dep.medicalConditions && dep.medicalConditions.length > 0) {
@@ -106,10 +147,16 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
                         });
                         // Add dependant's additional charges and premium to the total premium
                         totalPremium += dependantAdditionalCharges + dependantPremium;
+                       
+
                     } else {
                         // If no medical conditions, just add the dependant's premium
                         totalPremium += dependantPremium;
+                        
+
                     }
+ 
+
                 }
             });
     
@@ -126,8 +173,9 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
             setPremium(totalPremium);
     
             // Calculate the total paid premium by adding the stamp duty, ITL, and IPCF amounts
-            setTotalPayedPremium(Number(totalPremium) + Number(stampDuty) + Number(ipcfAmount) + Number(itlAmount));
-            setMedicalTotalPremium(Number(totalPremium) + Number(stampDuty) + Number(ipcfAmount) + Number(itlAmount));
+            setTotalPayedPremium(Number(totalPremium) + Number(stampDuty * paymentCurrencyRate) + Number(ipcfAmount) + Number(itlAmount));
+            setMedicalTotalPremium(Number(totalPremium) + Number(stampDuty * paymentCurrencyRate) + Number(ipcfAmount) + Number(itlAmount));
+            setDependantCount(dependantCountCheck)
         }
     }, [setPremium, stampDuty, setIpcf, setItl, itl]);
     
@@ -167,22 +215,22 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
                     <div className="sm:w-full md:w-2/3">
                     {coverAmountOutpatient && (
                         <p>
-                        Outpatient: KES {coverAmountOutpatient}
+                        Outpatient: {paymentCurrencyType} {coverAmountOutpatient}
                         </p>
                     )}
                     {coverAmountInpatient && (
                         <p>
-                        Inpatient: KES {coverAmountInpatient}
+                        Inpatient: {paymentCurrencyType} {coverAmountInpatient}
                         </p>
                     )}
                     {coverAmountDental && (
                         <p>
-                        Dental: KES {coverAmountDental}
+                        Dental: {paymentCurrencyType} {coverAmountDental}
                         </p>
                     )}
                     {coverAmountOptical && (
                         <p>
-                        Optical: KES {coverAmountOptical}
+                        Optical: {paymentCurrencyType} {coverAmountOptical}
                         </p>
                     )}
                     </div>
@@ -246,23 +294,23 @@ const Step3PolicySummaryMedical = ({setMedicalTotalPremium}) => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Premium</div>
-                        <div>KES {premium}</div>
+                        <div>{paymentCurrencyType} {premium}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">ITL</div>
-                        <div>KES {itl}</div>
+                        <div>{paymentCurrencyType} {itl}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">IPCF</div>
-                        <div>KES {ipcf}</div>
+                        <div>{paymentCurrencyType} {ipcf}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Stamp Duty</div>
-                        <div>KES {stampDuty}</div>
+                        <div>{paymentCurrencyType}    {paymentCurrencyRate * stampDuty} </div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Total</div>
-                        <div className="font-bold">KES {Number(totalPayedPremium)}</div>
+                        <div className="font-bold">{paymentCurrencyType} {Number(totalPayedPremium)}</div>
                     </div>
                 </div>
             </div>

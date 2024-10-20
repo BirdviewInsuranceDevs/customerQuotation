@@ -11,21 +11,52 @@ const Step3PolicySummaryHospitalCash = ({setHospitalCashTotalPremium}) => {
     const [totalPayedPremium, setTotalPayedPremium] = useState();
     const [coverType, setCoverType] = useState();
     const [dependantCount, setDependantCount] = useState();
+    const [paymentCurrencyType, setPaymentCurrencyType] = useState();
+    const [paymentCurrencyRate, setPaymentCurrencyRate] = useState();
+
+    
+   
 
     
     useEffect(() => {
         // Retrieve the stored data from local storage
         const data = JSON.parse(localStorage.getItem('QuotationData'));
-    
+
         // Check if hospital cash is active
         const hospitalCashActive = data?.hospitalCash?.isActive;
+
+        // Check Currency Rate and Assig Rate
+        setPaymentCurrencyRate(data?.contactAndCurrencyData?.currencyRate)
+
+        // Check the currency type and assign the appropriate symbol
+        const currencySymbol = (currency) => {
+            switch (currency) {
+                case 'KES':
+                return 'Ksh.';
+                case 'USD':
+                return '$';
+                case 'EUR':
+                return '€';
+                case 'GBP':
+                return '£';
+                default:
+                return 'Ksh.';  
+            }
+            };
+    
+            // Use the currency check before setting the payment currency type
+            const currencyType = currencySymbol(data?.contactAndCurrencyData?.currency);
+            setPaymentCurrencyType(currencyType);
+    
+        
     
         if (hospitalCashActive) {
             // Extract hospital cash details and set cover amount and policy start date
             const hospitalCash = data.hospitalCash;
             setCoverAmount(hospitalCash.coverAmount);
             setCoverType(hospitalCash.coverType);
-            setDependantCount(hospitalCash.dependantCount);
+            let dependantCountCheck = 0;
+
     
             const policyStartDate = new Date(hospitalCash.policyStartDate);
             setPolicyStartDate(policyStartDate.toISOString().split('T')[0]);
@@ -58,6 +89,11 @@ const Step3PolicySummaryHospitalCash = ({setHospitalCashTotalPremium}) => {
     
             dependants.forEach(dep => {
                 const dependantPremium = Number(dep?.hospitalCashData?.premium) || 0; // Ensure it's a number
+                
+                  // Calculate the Number of Dependants
+                if (dependantPremium !== 0 ) {
+                    dependantCountCheck++;
+                }
     
                 if (coverType === "per-family") {
                     // If the dependant has medical conditions, calculate additional charges
@@ -74,9 +110,9 @@ const Step3PolicySummaryHospitalCash = ({setHospitalCashTotalPremium}) => {
     
                         // Sum up each dependant's premium with their additional charges
                         totalPremium += dependantPremium + dependantAdditionalCharges;
-                    } else {
-                        totalPremium += dependantPremium; // Add base premium if no additional charges
-                    }
+                      
+                    } 
+
                 } else if (coverType === "per-person") {
                     // If the dependant has medical conditions, calculate additional charges
                     if (dep.medicalConditions && dep.medicalConditions.length > 0) {
@@ -92,8 +128,11 @@ const Step3PolicySummaryHospitalCash = ({setHospitalCashTotalPremium}) => {
     
                         // Sum up each dependant's premium with their additional charges
                         totalPremium += dependantPremium + dependantAdditionalCharges;
+
                     } else {
                         totalPremium += dependantPremium ; // Add base premium if no additional charges
+                        
+
                     }
                 }
             });
@@ -112,8 +151,11 @@ const Step3PolicySummaryHospitalCash = ({setHospitalCashTotalPremium}) => {
             setPremium(totalPremium);
     
             // Calculate the total paid premium by adding the stamp duty
-            setTotalPayedPremium(Number(totalPremium) + Number(stampDuty) + Number(ipcfAmount) + Number(itl)); // Ensure ipcfAmount is used
-            setHospitalCashTotalPremium(Number(totalPremium) + Number(stampDuty) + Number(ipcfAmount) + Number(itl)); 
+            setTotalPayedPremium(Number(totalPremium) + Number(stampDuty * paymentCurrencyRate) + Number(ipcfAmount) + Number(itl)); // Ensure ipcfAmount is used
+            setHospitalCashTotalPremium(Number(totalPremium) + Number(stampDuty * paymentCurrencyRate) + Number(ipcfAmount) + Number(itl)); 
+            // Update the current Dependants
+            setDependantCount(dependantCountCheck);
+
         }
     }, [setPremium, stampDuty, setIpcf, setItl, itl]);
     
@@ -149,7 +191,7 @@ const Step3PolicySummaryHospitalCash = ({setHospitalCashTotalPremium}) => {
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start border-b border-gray-300 pb-2">
                     <div className="font-bold sm:w-full md:w-1/3">Benefit Limits</div>
-                    <div className="sm:w-full md:w-2/3">KES {coverAmount}</div>
+                    <div className="sm:w-full md:w-2/3">{paymentCurrencyType} {coverAmount}</div>
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start border-b border-gray-300 pb-2">
                     <div className="font-bold sm:w-full md:w-1/3">Summary of Exclusions</div>
@@ -209,23 +251,23 @@ const Step3PolicySummaryHospitalCash = ({setHospitalCashTotalPremium}) => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Premium</div>
-                        <div>KES {premium}</div>
+                        <div>{paymentCurrencyType} {premium}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">ITL</div>
-                        <div>KES {itl}</div>
+                        <div>{paymentCurrencyType} {itl}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">IPCF</div>
-                        <div>KES {ipcf}</div>
+                        <div>{paymentCurrencyType} {ipcf}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Stamp Duty</div>
-                        <div>KES {stampDuty}</div>
+                        <div>{paymentCurrencyType}  {paymentCurrencyRate * stampDuty}</div>
                     </div>
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Total</div>
-                        <div className="font-bold">KES {Number(totalPayedPremium)}</div>
+                        <div className="font-bold">{paymentCurrencyType} {Number(totalPayedPremium)}</div>
                     </div>
                 </div>
             </div>

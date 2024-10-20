@@ -1,12 +1,10 @@
 import React ,{useEffect} from "react";
 import { TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText  } from '@mui/material';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs from 'dayjs'; 
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper  } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import { Alert } from '@mui/material'; 
+import DeselectIcon from '@mui/icons-material/Deselect';
 
 const Step0LastExpense = ({
         conversionRates,
@@ -18,11 +16,12 @@ const Step0LastExpense = ({
         LastExpensePlans 
       }) => {  
 
+          const today = new Date().toISOString().split('T')[0] 
         
           // convertor Function
           const convertAmount = (amount) => {
-            // Remove commas and convert to number
-            const amountclean = parseFloat(amount.replace(/,/g, ''));
+              //  Convert to number
+             const amountclean = parseInt(amount);
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
@@ -46,7 +45,7 @@ const Step0LastExpense = ({
           useEffect(() => {
             const selectedPlan = LastExpensePlans.find(plan => plan.id === formDataStep0LastExpense.selectedPlan);
             if (selectedPlan) {
-              const totalAmount = (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + (Number(selectedPlan.premium)) +(40);
+              const totalAmount =  conversionRates[contactAndLoginsAndCurrency.currency] * ( (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + (Number(selectedPlan.premium)) +(40));
               setFormDataStep0LastExpense(prevState => ({
                 ...prevState,
                 totalAmount
@@ -54,13 +53,21 @@ const Step0LastExpense = ({
               const { coverAmount, premium } = selectedPlan;   
               setFormDataStep0LastExpense(prevState => ({
                 ...prevState,
-                coverAmount: Number(coverAmount),  
-                premium: Number(premium)   
+                coverAmount:  (Number(coverAmount)  * conversionRates[contactAndLoginsAndCurrency.currency] ),  
+                premium: Number((premium * conversionRates[contactAndLoginsAndCurrency.currency]))    
               }));
             }
           }, [formDataStep0LastExpense.selectedPlan,setFormDataStep0LastExpense, LastExpensePlans]);
           
-      
+         //  Deselect all previous Selected plans
+          const handleDeselectPlans = () =>{
+            setFormDataStep0LastExpense(prevState => ({
+             ...prevState,
+               selectedPlan: null,
+               premium: null,
+            }));
+          }
+
     return (
       <div className="bg-white p-2 shadow-div shadow-3xl  mt-1">
         <form className="mt-4">
@@ -99,42 +106,36 @@ const Step0LastExpense = ({
   
             {/* Policy Start Date */}
             <div className="flex-1">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <DatePicker
-                label="policy-start-date"
-                value={formDataStep0LastExpense?.policyStartDate ? dayjs(formDataStep0LastExpense?.policyStartDate) : null}
-                onChange={(newValue) => {
-                  // Ensure `newValue` is a valid Dayjs object
-                  setFormDataStep0LastExpense({
-                    ...formDataStep0LastExpense,
-                    policyStartDate: newValue,
-                  });
-                  
-                  // Clear error if a new valid date is selected
-                  if (errors.policyStartDate) {
-                    setErrors({ ...errors, policyStartDate: '' });
-                  }
-                }}
-                minDate={dayjs()}  // Disable past dates
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    error={!!errors.policyStartDate}  // Show error border
-                    style={{ marginBottom: errors.policyStartDate ? '0.5rem' : '1rem' }}  // Adjust margin if error
-                  />
-                )}
-              />
+                <TextField
+                  label="DOB"
+                  type="date"
+                  variant="outlined"
+                  fullWidth
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  InputProps={{
+                    inputProps: { min: today }, // Assuming `today` is a valid date string like 'YYYY-MM-DD'
+                  }}
+                  required
+                  value={formDataStep0LastExpense?.policyStartDate || ''} // Use an empty string if null/undefined
+                  onChange={(event) => {
+                    const newValue = event.target.value; // Get the string value from the event
+                    setFormDataStep0LastExpense({
+                      ...formDataStep0LastExpense,
+                      policyStartDate: newValue,
+                    });
 
-              {/* Error message in a span, displayed below the input */}
-              {errors.policyStartDate && (
-                <span style={{ color: 'red', fontSize: '0.875rem' }}>
-                  {errors.policyStartDate}
-                </span>
-              )}
-            </div>
-          </LocalizationProvider>
-            </div>
+                    // Clear error if a valid date is selected
+                    if (errors.policyStartDate) {
+                      setErrors({ ...errors, policyStartDate: '' });
+                    }
+                  }}
+                  error={!!errors.policyStartDate}
+                  helperText={errors.policyStartDate} // Show the actual error message
+                />
+              </div>
+
           </div>
   
           {/* Product Options Table */}
@@ -148,7 +149,14 @@ const Step0LastExpense = ({
                     <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Plan</TableCell>
                     <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Cover Amount</TableCell>
                     <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Premium (Base)</TableCell>
-                    <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Select a Plan</TableCell>
+                    <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold', padding: '8px' }}>
+                                                {(formDataStep0LastExpense.selectedPlan === null)
+                                                  ? (
+                                                    'Select'
+                                                  ) : (
+                                                    <DeselectIcon onClick={handleDeselectPlans}  />
+                                                  )}
+                                                </TableCell>
                   </TableRow>
                 </TableHead>
                 {/* Table Body */}
@@ -181,7 +189,9 @@ const Step0LastExpense = ({
               </Table>
             </TableContainer>
             {errors.selectedPlan && (
-              <p className="text-red-500 text-sm mt-2">{errors.selectedPlan}</p>
+             <Alert severity="error">
+             {errors.selectedPlan}
+            </Alert>
             )}
           </div>
   
@@ -201,23 +211,70 @@ const Step0LastExpense = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t ">
                           <div className="flex justify-between border-b  pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh {Number(plan.premium).toLocaleString() || 'N/A'}</span>
+                            <span>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the premium amount with thousands separators
+                                  const formattedPremium = Number(formDataStep0LastExpense.premium).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedPremium}
+                                    </>
+                                  );
+                                })()}
+                              </span>
+
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{(0.002 * Number(plan.premium)).toFixed(2)|| 'N/A'}</span>
+                            <span>{ conversionRates[contactAndLoginsAndCurrency.currency] * (0.002 * Number(plan.premium)) || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{(0.0025 * Number(plan.premium)).toFixed(2) || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.0025 * Number(plan.premium))  || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Stamp Duty</span>
-                            <span>{ 40 || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * 40 || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh { Number(formDataStep0LastExpense.totalAmount).toLocaleString()  || 'N/A'}</b></span>
+                            <span>
+                          <b>
+                            {(() => {
+                              // Map currency codes to their symbols
+                              const currencySymbols = {
+                                KES: 'Ksh.',
+                                USD: '$',
+                                EUR: '€',
+                                GBP: '£',
+                              };
+
+                              // Get the currency symbol based on the current currency
+                              const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                              // Format the total amount with thousands separators
+                              const formattedTotalAmount = Number(formDataStep0LastExpense.totalAmount).toLocaleString() || 'N/A';
+
+                              return (
+                                <>
+                                  {currencySymbol} {formattedTotalAmount}
+                                </>
+                              );
+                            })()}
+                          </b>
+                        </span>
                           </div>
                         </div>
                       </div>

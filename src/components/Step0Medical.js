@@ -1,12 +1,12 @@
 import React ,{useEffect} from "react";
+import { Alert } from '@mui/material'; 
 import { TextField } from '@mui/material';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs from 'dayjs'; 
-import { Table, TableBody, TableCell,FormControl,Select, MenuItem, FormHelperText ,TableContainer, InputLabel,TableHead, TableRow, Paper, Button } from '@mui/material';
+import { Table, TableBody, TableCell,FormControl,Select, MenuItem, FormHelperText ,TableContainer, InputLabel,TableHead, TableRow, Paper  } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import DeselectIcon from '@mui/icons-material/Deselect';
+
+
 const Step0Medical = ({
         conversionRates,
         contactAndLoginsAndCurrency,
@@ -16,6 +16,9 @@ const Step0Medical = ({
         setErrors,
         MedicalPlans 
       }) => {  
+
+        const today = new Date().toISOString().split('T')[0] 
+
         useEffect(() => {
           computeRatesOnSelect(
             formDataStep0Medical[`selectedPlanInpatient`],
@@ -101,8 +104,8 @@ const Step0Medical = ({
         
           // convertor Function
           const convertAmount = (amount) => {
-            // Remove commas and convert to number
-            const amountclean = parseFloat(amount.replace(/,/g, ''));
+              //  Convert to number
+              const amountclean = parseInt(amount);
             // Convert to selected currency
             let convertedAmount ='';
             if(contactAndLoginsAndCurrency.currency === 'KES' ){ 
@@ -130,7 +133,7 @@ const Step0Medical = ({
            
             if(coverType === 'per-person'){
             if (selectedPlan) {
-              const totalAmount = (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + (Number(dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(dependantCount) + 1 ))  ) +(40);
+              const totalAmount = conversionRates[contactAndLoginsAndCurrency.currency] *  ((0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + (Number(dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(dependantCount) + 1 ))  ) +(40));
              
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
@@ -141,12 +144,12 @@ const Step0Medical = ({
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
                 coverAmount: Number(coverAmount),    
-                [`premium${category}`]: premium,
-                [`coverAmount${category}`]: Number(coverAmount),
+                [`premium${category}`]:  (Number(premium)  * conversionRates[contactAndLoginsAndCurrency.currency] ),
+                [`coverAmount${category}`]: Number((coverAmount * conversionRates[contactAndLoginsAndCurrency.currency])),
                 
               }));
 
-              const premiumDisplay =  (Number(dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(dependantCount) + 1 ))  );
+              const premiumDisplay = conversionRates[contactAndLoginsAndCurrency.currency] * ((Number(dependantCount) === 0 ? Number(selectedPlan.premium) : ((Number(selectedPlan.premium)) * (Number(dependantCount) + 1 ))  ));
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
                 [`premiumDisplay${category}`]:premiumDisplay
@@ -156,7 +159,7 @@ const Step0Medical = ({
             }
           } else {
             if (selectedPlan) {
-              const totalAmount = (0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + ((Number(dependantCount) === 0 || !dependantCount) ? Number(selectedPlan.premium) : (Number(selectedPlan.premium)) ) +(40);
+              const totalAmount = conversionRates[contactAndLoginsAndCurrency.currency] *  ((0.0025 * Number(Number(selectedPlan.premium))) + (0.002 * Number(Number(selectedPlan.premium))) + ((Number(dependantCount) === 0 || !dependantCount) ? Number(selectedPlan.premium) : (Number(selectedPlan.premium)) ) +(40));
              
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
@@ -167,19 +170,49 @@ const Step0Medical = ({
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
                 coverAmount: Number(coverAmount),    
-                [`premium${category}`]: premium,
-                [`coverAmount${category}`]: Number(coverAmount),
+                [`premium${category}`]: Number((premium * conversionRates[contactAndLoginsAndCurrency.currency]) ),
+                [`coverAmount${category}`]: Number((coverAmount * conversionRates[contactAndLoginsAndCurrency.currency])),
 
               }));
               
 
-              const premiumDisplay = (Number(selectedPlan.premium)) ;
+              const premiumDisplay = conversionRates[contactAndLoginsAndCurrency.currency] *  (Number(selectedPlan.premium)) ;
               setFormDataStep0Medical(prevState => ({
                 ...prevState,
                 [`premiumDisplay${category}`]:premiumDisplay
               })); 
              }
               } }
+
+
+            
+              // Deselect all selected plans
+
+              const handleDeselectPlans = () =>{
+                setFormDataStep0Medical(prevState => ({
+                 ...prevState,
+                  selectedPlanInpatient: null,
+                  selectedPlanOutpatient: null,
+                  selectedPlanDental: null,
+                  selectedPlanOptical: null,
+                  totalAmountInpatient: null,
+                  totalAmountOutpatient: null,
+                  totalAmountDental: null,
+                  totalAmountOptical: null,
+                  premiumInpatient: null,
+                  premiumOutpatient: null,
+                  premiumDental: null,
+                  premiumOptical: null,
+                  coverAmountInpatient: null,
+                  coverAmountOutpatient: null,
+                  coverAmountDental: null,
+                  coverAmountOptical: null,
+                  premiumDisplayInpatient: null,
+                  premiumDisplayOutpatient: null,
+                  premiumDisplayDental: null,
+                  premiumDisplayOptical: null,
+                }));
+              }
           
          
       
@@ -246,44 +279,39 @@ const Step0Medical = ({
                 />
               </div>
           
-            {/* Policy Start Date */}
-            <div className="flex-1">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <DatePicker
-                label="policy-start-date"
-                value={formDataStep0Medical?.policyStartDate ? dayjs(formDataStep0Medical?.policyStartDate) : null}
-                onChange={(newValue) => {
-                  // Ensure `newValue` is a valid Dayjs object
-                  setFormDataStep0Medical({
-                    ...formDataStep0Medical,
-                    policyStartDate: newValue,
-                  });
-                  
-                  // Clear error if a new valid date is selected
-                  if (errors.policyStartDate) {
-                    setErrors({ ...errors, policyStartDate: '' });
-                  }
-                }}
-                minDate={dayjs()}  // Disable past dates
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    error={!!errors.policyStartDate}  // Show error border
-                    style={{ marginBottom: errors.policyStartDate ? '0.5rem' : '1rem' }}  // Adjust margin if error
-                  />
-                )}
-              />
+              {/* Policy Start Date */}
+             <div className="flex-1">
+                <TextField
+                  label="DOB"
+                  type="date"
+                  variant="outlined"
+                  fullWidth
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  InputProps={{
+                    inputProps: { min: today }, // Assuming `today` is a valid date string like 'YYYY-MM-DD'
+                  }}
+                  required
+                  value={formDataStep0Medical?.policyStartDate || ''} // Use an empty string if null/undefined
+                  onChange={(event) => {
+                    const newValue = event.target.value; // Get the string value from the event
+                    setFormDataStep0Medical({
+                      ...formDataStep0Medical,
+                      policyStartDate: newValue,
+                    });
 
-              {/* Error message in a span, displayed below the input */}
-              {errors.policyStartDate && (
-                <span style={{ color: 'red', fontSize: '0.875rem' }}>
-                  {errors.policyStartDate}
-                </span>
-              )}
-            </div>
-          </LocalizationProvider>
-            </div>
+                    // Clear error if a valid date is selected
+                    if (errors.policyStartDate) {
+                      setErrors({ ...errors, policyStartDate: '' });
+                    }
+                  }}
+                  error={!!errors.policyStartDate}
+                  helperText={errors.policyStartDate} // Show the actual error message
+                />
+              </div>
+
+
           </div>
   
           {/* Product Options Table */}
@@ -297,7 +325,18 @@ const Step0Medical = ({
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold',padding: '8px' }}>Benefit</TableCell>
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold' ,padding: '8px'}}>Cover Amount</TableCell>
                   <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold',padding: '8px' }}>Premium (Base)</TableCell>
-                  <TableCell  align="center" sx={{ color: 'white', fontWeight: 'bold' ,padding: '8px'}}>Select</TableCell>
+                  <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold', padding: '8px' }}>
+                                                {(formDataStep0Medical.selectedPlanInpatient === null &&
+                                                  formDataStep0Medical.selectedPlanOutpatient === null &&
+                                                  formDataStep0Medical.selectedPlanInpatient === null &&
+                                                  formDataStep0Medical.selectedPlanDental === null  &&
+                                                  formDataStep0Medical.selectedPlanOptical === null)
+                                                  ? (
+                                                    'Select'
+                                                  ) : (
+                                                    <DeselectIcon onClick={handleDeselectPlans} className=" mr-4" />
+                                                  )}
+                                                </TableCell>
                 </TableRow>
               </TableHead>
               
@@ -310,7 +349,9 @@ const Step0Medical = ({
             </Table>
           </TableContainer>
             {errors.selectedPlan && (
-                <p className="text-red-500 text-sm mt-2">{errors.selectedPlan}</p>
+                <Alert severity="error">
+                {errors.selectedPlan}
+               </Alert>
             )}
             </div>
   
@@ -331,23 +372,71 @@ const Step0Medical = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
                             <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh. {formDataStep0Medical["premiumDisplayInpatient"]}</span>
+                            <span>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the premium amount with thousands separators
+                                  const formattedPremium = Number(formDataStep0Medical["premiumDisplayInpatient"]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedPremium}
+                                    </>
+                                  );
+                                })()}
+                              </span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayInpatient"])).toFixed(2) || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.002 * Number(formDataStep0Medical["premiumDisplayInpatient"]))  || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayInpatient"])).toFixed(2)  || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.0025 * Number(formDataStep0Medical["premiumDisplayInpatient"]))   || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                               <span className="font-medium">Stamp Duty</span>
-                              <span>{ 40 || 'N/A'}</span>
+                              <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * 40 || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
                             <span><b>Ksh { Number(formDataStep0Medical[`totalAmountInpatient`]).toLocaleString() || 'N/A'}</b></span>
+
+                            <span>
+                              <b>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the total amount with thousands separators
+                                  const formattedTotalAmount = Number(formDataStep0Medical[`totalAmountInpatient`]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedTotalAmount}
+                                    </>
+                                  );
+                                })()}
+                              </b>
+                            </span>
                             </div>
                         </div>
                         </div>
@@ -371,23 +460,70 @@ const Step0Medical = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
                             <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh. {formDataStep0Medical["premiumDisplayOutpatient"]}</span>
+                            <span>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the premium amount with thousands separators
+                                  const formattedPremium = Number(formDataStep0Medical["premiumDisplayOutpatient"]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedPremium}
+                                    </>
+                                  );
+                                })()}
+                              </span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayOutpatient"])).toFixed(2) || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.002 * Number(formDataStep0Medical["premiumDisplayOutpatient"]))  || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayOutpatient"])).toFixed(2)  || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.0025 * Number(formDataStep0Medical["premiumDisplayOutpatient"]))   || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                               <span className="font-medium">Stamp Duty</span>
-                              <span>{ 40 || 'N/A'}</span>
+                              <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * 40 || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh { Number(formDataStep0Medical[`totalAmountOutpatient`]).toLocaleString() || 'N/A'}</b></span>
+
+                            <span>
+                              <b>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the total amount with thousands separators
+                                  const formattedTotalAmount = Number(formDataStep0Medical[`totalAmountOutpatient`]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedTotalAmount}
+                                    </>
+                                  );
+                                })()}
+                              </b>
+                            </span>
                             </div>
                         </div>
                         </div>
@@ -411,24 +547,70 @@ const Step0Medical = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
                             <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh. {formDataStep0Medical["premiumDisplayDental"]}</span>
+                            <span>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the premium amount with thousands separators
+                                  const formattedPremium = Number(formDataStep0Medical["premiumDisplayDental"]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedPremium}
+                                    </>
+                                  );
+                                })()}
+                              </span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayDental"])).toFixed(2) || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.002 * Number(formDataStep0Medical["premiumDisplayDental"]))  || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayDental"])).toFixed(2)  || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.0025 * Number(formDataStep0Medical["premiumDisplayDental"]))   || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                               <span className="font-medium">Stamp Duty</span>
-                              <span>{ 40 || 'N/A'}</span>
+                              <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * 40 || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh { Number(formDataStep0Medical[`totalAmountDental`]).toLocaleString() || 'N/A'}</b></span>
-                            </div>
+                            <span>
+                              <b>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the total amount with thousands separators
+                                  const formattedTotalAmount = Number(formDataStep0Medical[`totalAmountDental`]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedTotalAmount}
+                                    </>
+                                  );
+                                })()}
+                              </b>
+                            </span>
+                             </div>
                         </div>
                         </div>
                     ))}
@@ -451,24 +633,69 @@ const Step0Medical = ({
                         <div className="flex flex-col gap-2 text-sm text-gray-700 border-t">
                             <div className="flex justify-between border-b pt-2 border-gray-300 pb-2 mb-2">
                             <span className="font-medium">Premium</span>
-                            <span>Ksh. {formDataStep0Medical["premiumDisplayOptical"]}</span>
+                            <span>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the premium amount with thousands separators
+                                  const formattedPremium = Number(formDataStep0Medical["premiumDisplayOptical"]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedPremium}
+                                    </>
+                                  );
+                                })()}
+                              </span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">ITL</span>
-                            <span>{(0.002 * Number(formDataStep0Medical["premiumDisplayOptical"])).toFixed(2) || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.002 * Number(formDataStep0Medical["premiumDisplayOptical"]))  || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                             <span className="font-medium">PCF</span>
-                            <span>{(0.0025 * Number(formDataStep0Medical["premiumDisplayOptical"])).toFixed(2)  || 'N/A'}</span>
+                            <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * (0.0025 * Number(formDataStep0Medical["premiumDisplayOptical"]))   || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-300 pb-2 mb-2">
                               <span className="font-medium">Stamp Duty</span>
-                              <span>{ 40 || 'N/A'}</span>
+                              <span>{  conversionRates[contactAndLoginsAndCurrency.currency] * 40 || 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                             <span className="font-medium">TOTAL</span>
-                            <span><b>Ksh { Number(formDataStep0Medical[`totalAmountOptical`]).toLocaleString() || 'N/A'}</b></span>
-                            </div>
+                            <span>
+                              <b>
+                                {(() => {
+                                  // Map currency codes to their symbols
+                                  const currencySymbols = {
+                                    KES: 'Ksh.',
+                                    USD: '$',
+                                    EUR: '€',
+                                    GBP: '£',
+                                  };
+
+                                  // Get the currency symbol based on the current currency
+                                  const currencySymbol = currencySymbols[contactAndLoginsAndCurrency.currency] || '';
+
+                                  // Format the total amount with thousands separators
+                                  const formattedTotalAmount = Number(formDataStep0Medical[`totalAmountOptical`]).toLocaleString() || 'N/A';
+
+                                  return (
+                                    <>
+                                      {currencySymbol} {formattedTotalAmount}
+                                    </>
+                                  );
+                                })()}
+                              </b>
+                            </span> </div>
                         </div>
                         </div>
                     ))}

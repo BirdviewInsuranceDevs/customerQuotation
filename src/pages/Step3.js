@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Checkbox, FormControlLabel, Link } from '@mui/material';
+import { Button, Checkbox, FormControlLabel } from '@mui/material';
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import Step3PolicyEvacuationRepatriation from '../components/Step3PolicyEvacuationRepatriation';
@@ -7,20 +7,49 @@ import Step3PolicySummarylastExpense from '../components/Step3PolicySummarylastE
 import Step3PolicySummaryMedical from '../components/Step3PolicySummaryMedical';
 import Step3PolicySummaryHospitalCash from '../components/Step3PolicySummaryHospitalCash';
 import Step3PolicySummaryPersonalAccident from '../components/Step3PolicySummaryPersonalAccident';
-
+import TermsAndConditions from '../components/TermsAndConditions';
 const Step3 = () => {
+    const [openTermsAndConditions , setOpenTermsAndConditions] = useState(false);
+
+    
+    
     const [activeStep, setActiveStep] = useState(() => {
         const savedStep = localStorage.getItem('activeStep');
         return savedStep ? parseInt(savedStep, 10) : 0;
     });
 
     const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [paymentCurrencyType, setPaymentCurrencyType] = useState();
+
 
     useEffect(() => {
         localStorage.setItem('activeStep', activeStep);
-    }, [activeStep]);
+        const data = JSON.parse(localStorage.getItem('QuotationData'));
+
+           // Check the currency type and assign the appropriate symbol
+           const currencySymbol = (currency) => {
+            switch (currency) {
+                case 'KES':
+                return 'Ksh.';
+                case 'USD':
+                return '$';
+                case 'EUR':
+                return '€';
+                case 'GBP':
+                return '£';
+                default:
+                return 'Ksh.';  
+            }
+            };
+    
+            // Use the currency check before setting the payment currency type
+            const currencyType = currencySymbol(data?.contactAndCurrencyData?.currency);
+            setPaymentCurrencyType(currencyType);
+
+    }, [activeStep,setPaymentCurrencyType]);
 
     const data = JSON.parse(localStorage.getItem('QuotationData'));
+   
 
     const evacuationRepatriationActive = data?.evacuationRepatriation?.isActive;
     const lastExpenseActive = data?.lastExpense?.isActive;
@@ -36,19 +65,21 @@ const Step3 = () => {
 
 
     const saveProcessedPayement = () =>{
-        const userData = JSON.parse(localStorage.getItem('QuotationData'));
-         userData.processedPayment = {
-            evacuationRepatriationTotalPremium: evacuationRepatriationtotalPremium, 
-            lastExpenseTotalPremium: lastExpenseTotalPremium,
-            medicalTotalPremium:medicalTotalPremium,
-            hospitalCashTotalPremium: hospitalCashTotalPremium,
-            personalAccidentTotalPremium: personalAccidentTotalPremium
+        const data = JSON.parse(localStorage.getItem('QuotationData'));
+
+        data.processedPayment = {
+            evacuationRepatriationTotalPremium: evacuationRepatriationtotalPremium || 0,
+            lastExpenseTotalPremium: lastExpenseTotalPremium || 0,
+            medicalTotalPremium: medicalTotalPremium || 0,
+            hospitalCashTotalPremium: hospitalCashTotalPremium || 0,
+            personalAccidentTotalPremium: personalAccidentTotalPremium || 0
         };
+    
     
         // Clear local Storage Data
         localStorage.removeItem('QuotationData');
         // Step 4: Save the updated object back to local storage
-        localStorage.setItem('QuotationData', JSON.stringify(userData));
+        localStorage.setItem('QuotationData', JSON.stringify(data));
      
     }
 
@@ -88,38 +119,47 @@ const Step3 = () => {
                  {evacuationRepatriationActive &&
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Evacuation And Repatriation</div>
-                        <div>KES {Number(evacuationRepatriationtotalPremium).toLocaleString()}</div>
+                        <div>{paymentCurrencyType} {Number(evacuationRepatriationtotalPremium).toLocaleString()}</div>
                     </div>
                    }
                    {lastExpenseActive &&
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Last Expense</div>
-                        <div>KES {Number(lastExpenseTotalPremium).toLocaleString()}</div>
+                        <div>{paymentCurrencyType} {Number(lastExpenseTotalPremium).toLocaleString()}</div>
                     </div>
                     }
                    {medicalActive &&
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Medical</div>
-                        <div>KES {Number(medicalTotalPremium).toLocaleString()}</div>
+                        <div>{paymentCurrencyType} {Number(medicalTotalPremium).toLocaleString()}</div>
                     </div>
                     }
                   {hospitalCashActive &&
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Hospital Cash</div>
-                        <div>KES {Number(hospitalCashTotalPremium).toLocaleString()}</div>
+                        <div>{paymentCurrencyType} {Number(hospitalCashTotalPremium).toLocaleString()}</div>
                     </div>
                     }
                    {personalAccidentActive &&
                     <div className="flex flex-col border border-gray-300 p-2 rounded">
                         <div className="font-bold">Personal Accident</div>
-                        <div>KES {Number(personalAccidentTotalPremium).toLocaleString()}</div>
+                        <div>{paymentCurrencyType} {Number(personalAccidentTotalPremium).toLocaleString()}</div>
                     </div>
                      }
                 </div>
 
                 <div className="flex justify-end mt-4">
-                    <h4 className="text-lg font-bold">Total Premium: KES {Number(evacuationRepatriationtotalPremium + lastExpenseTotalPremium + medicalTotalPremium + hospitalCashTotalPremium + personalAccidentTotalPremium).toLocaleString()}</h4>
-                </div>
+                    <h4 className="text-lg font-bold">
+                        Total Premium: {paymentCurrencyType} {Number(
+                        (evacuationRepatriationtotalPremium || 0) +
+                        (lastExpenseTotalPremium || 0) +
+                        (medicalTotalPremium || 0) +
+                        (hospitalCashTotalPremium || 0) +
+                        (personalAccidentTotalPremium || 0)
+                        ).toLocaleString()}
+                    </h4>
+                    </div>
+
 
                 <div className="mt-4 text-sm">* Premiums are based on the selected plan and coverage types</div>
 
@@ -130,9 +170,18 @@ const Step3 = () => {
                         label={
                             <span>
                                 I accept the{' '}
-                                <Link href="/terms-and-conditions" target="_blank" className="text-blue-500 underline">
-                                    terms and conditions
-                                </Link>
+                                
+                                <Button  onClick={() => { setOpenTermsAndConditions(true); }}>
+                                terms and conditions
+                                </Button>
+
+                                {openTermsAndConditions  &&
+                                <>   
+                                          
+                                  <TermsAndConditions setOpenTermsAndConditions={setOpenTermsAndConditions} />
+                                </>
+ 
+                                }
                             </span>
                         }
                     />

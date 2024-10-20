@@ -6,9 +6,10 @@ import IconButton from '@mui/material/IconButton';
 import InfoIcon from '@mui/icons-material/Info';
 const ProposerForm = ({setProposerHistoryData}) => {
 
+     const data = JSON.parse(localStorage.getItem('QuotationData')) || {};
 
 
-    const [formData, setFormData] = useState({
+     const savedformData = data.proposerHistoryData || {
         "1": { question: "What actual duties do you perform?", answer: "", otherDetails: "" },
         "2a": { question: "Do you suffer from: (a) Any sight hearing or any other impairment?", answer: "", details: "" },
         "2b": { question: "Have you ever suffered any serious injury or illness?", answer: "", details: "" },
@@ -28,8 +29,11 @@ const ProposerForm = ({setProposerHistoryData}) => {
         "10c": { question: "Declined to renew your Policy?", answer: "", details: "" },
         "10d": { question: "Imposed any special terms?", answer: "", details: "" },
         "10e": { question: "Declined any claim?", answer: "", details: "" },
+    }
 
-    });
+
+    const [formData, setFormData] =useState(savedformData);
+
 
     useEffect(() => {
         setProposerHistoryData(formData);
@@ -88,27 +92,22 @@ const ProposerForm = ({setProposerHistoryData}) => {
               <hr/>
             <h3 className="text-lg font-semibold mb-4 text-center">PROPOSER HISTORY
 
-            <Tooltip
-                title={
-                    <div style={{ whiteSpace: 'nowrap', maxWidth: '300px' }}>
-                        <p>
-                        Note: Please note that the following activities and others of a similar nature are not covered unless on a special arrangement, in which case additional premium will be charged: -
-                        Aqualung diving, boxing, climbing or mountaineering necessitating the use of ropes or guides, football 
-                        (except amateur football), hang gliding, wild hunting, ice hockey, motor racing, motorcycle cycle racing, parachuting, polo, potholing, power boating, racing other than on foot, rugby, show jumping, ski-ing or sledging, water
-                        skiing, ice skating, winter sports, wrestling including judo, karate and any other unarmed combat, yachting 
-                        outside territorial waters and any other hazardous occupations/activities
-                        </p>
-                        
-                    </div>
-                }
-                arrow
-                placement="right" // Adjust placement as needed
-                disableInteractive // Prevents tooltip from staying open on mouseover
-            >
-                <IconButton>
-                    <InfoIcon />
-                </IconButton>
-            </Tooltip>
+                 <Tooltip
+                    title={
+                        <span>
+                            <strong>Note:</strong> Please note that the following activities and others of a similar nature are not covered unless on a special arrangement, in which case additional premium will be charged: <br />
+                            - Aqualung diving, boxing, climbing or mountaineering necessitating the use of ropes or guides, football (except amateur football), hang gliding, wild hunting, ice hockey, motor racing, motorcycle racing, parachuting, polo, potholing, power boating, racing other than on foot, rugby, show jumping, skiing or sledging, water skiing, ice skating, winter sports, wrestling including judo, karate, and any other unarmed combat, yachting outside territorial waters, and any other hazardous occupations/activities.
+                        </span>
+                    }
+                    arrow
+                    placement="right"
+                    disableInteractive
+                    >
+                    <IconButton>
+                        <InfoIcon />
+                    </IconButton>
+                </Tooltip>
+
 
 
             </h3>

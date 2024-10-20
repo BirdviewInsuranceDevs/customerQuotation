@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import jsPDF from 'jspdf';
-import { Button, colors } from '@mui/material';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import { Button  } from '@mui/material';
+import axios from 'axios';
 
-const Step5PolicyDodument = () => {
-  const [pdfUrl, setPdfUrl] = useState(null);
-  const generatePDF = async () => {
+const Step5PolicyDodument = ({processState,buttonName,setCheckMailDelivery,setLoaderIcon,holderEmail} ) => {
+  const [recipientEmail, setRecipientEmail] = useState(holderEmail);
+  const [responseMessage, setResponseMessage] = useState(''); // State to hold the response message
+  const [errorMessage, setErrorMessage] = useState(''); // State to hold the error message
+   
+  const generatePDF = async (processingType) => {
     const doc = new jsPDF();
 
     // Use a valid image URL (adjust the path as necessary)
@@ -15,7 +18,7 @@ const Step5PolicyDodument = () => {
     const img = new Image();
     img.src = imgUrl;
 
-    img.onload = () => {
+   
       // Page 1: Cover Page
       const imgWidth = 50; // Desired width
       const imgHeight = 20; // Desired height
@@ -1464,10 +1467,7 @@ const Step5PolicyDodument = () => {
               { left: 'Dental Prescriptions', middle: 'Covered to full limit', right: 'Covered to full limit', extra: 'Covered to full limit' },
           ];
 
-          // Function to handle wrapping text inside a cell
-          function wrapTextInCell(text, maxWidth) {
-              return doc.splitTextToSize(text, maxWidth);
-          }
+         
 
           // Loop through the data to add rows with borders
           pg21_dentalData.forEach((row) => {
@@ -1636,10 +1636,7 @@ const Step5PolicyDodument = () => {
               // Update the startY position for the next row
               pg23_startY += pg23_rowHeight;
 
-              // Function to handle wrapping text inside a cell
-              function wrapTextInCell(text, maxWidth) {
-                  return doc.splitTextToSize(text, maxWidth);
-              }
+               
 
               // Loop through the data to add rows for Last Expense
               pg23_lastExpenseData.forEach((row) => {
@@ -1840,11 +1837,7 @@ const Step5PolicyDodument = () => {
                   let outpatientStartY = 45; // Starting Y position for the table
                   const outpatientRowHeight = 10; // Row height
 
-                  // Function to handle wrapping text inside a cell
-                  function wrapTextInCell(text, maxWidth) {
-                      return doc.splitTextToSize(text, maxWidth);
-                  }
-
+                
                   // Loop through the data to add rows with borders
                   outpatientBenefitsData.forEach((row) => {
                       const wrappedLeftText = wrapTextInCell(row.left, outpatientLeftColumnWidth - 4); // Wrap left column text
@@ -1867,33 +1860,88 @@ const Step5PolicyDodument = () => {
                       outpatientStartY += cellHeight;
                   });
 
-      // TODO: Save the PDF  you can out policy Number here MINI
-      doc.save('individual_policy.pdf');
+                 
 
-    };
+   
 
-    // Handle image loading errors
-    img.onerror = () => {
-      console.error('Failed to load image');
-    };
+    // 3. Generate the PDF and convert it to a blob
+    const pdfBlob = doc.output('blob');
+
+    // set Email
+    setRecipientEmail(holderEmail);
+
+    // 4. Create a FormData object to send the PDF
+    const formData = new FormData();
+    formData.append('file', pdfBlob, 'generated.pdf');
+    formData.append('email', recipientEmail); // Use static email
+
+     
+ if(processingType === "SendMail"){
+        try {
+          setLoaderIcon(true);
+          // 5. Send the PDF to the API using axios
+          const response = await axios.post('https://sendmail.birdviewinsurance.com/upload', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+
+          // 6. Handle the API response
+          console.log('PDF sent successfully:', response.data);
+          setResponseMessage(response.data.message); // Update response message
+          setErrorMessage(''); // Clear any previous error message
+          setCheckMailDelivery(true)
+          setLoaderIcon(false);
+
+        } catch (error) {
+          console.error('Error sending PDF:', error);
+          setLoaderIcon(false);
+          // Update error message based on the response if available
+          if (error.response && error.response.data && error.response.data.error) {
+            setErrorMessage(error.response.data.error);
+          } else {
+            setErrorMessage('An unexpected error occurred. Please try again later.',error);
+          }
+          setResponseMessage(''); // Clear any previous response message
+        }
+ } else if (processingType ==="download") {
+        //  Generate the PDF and download it
+        try {
+
+          // Download Policy Document
+          doc.save("policyDocument.pdf");
+          setResponseMessage('Policy Document downloaded successfully'); 
+
+        } catch (error) {
+         
+          if (error) {
+            setErrorMessage(error);
+          } 
+          setResponseMessage(''); // Clear any previous response message
+        }
+
+
+
+      }
+
+
   };
 
   return (
-    <div className='p-4 flex justify-end'>
-    <Button
-      variant="contained"
-      sx={{color:'#ffffff'}}
-      onClick={generatePDF}
-      style={{
-        borderRadius: '50%', // Makes the button round
-        minWidth: 0, // Removes default minWidth
-        padding: '10px', // Adjusts padding for the icon
-      }}
-    >
-      <CloudDownloadIcon />
-    </Button>
-  </div>
+        <div className='p-4 flex justify-center text-center'>
+          <div>
+          <Button
+                variant="contained"
+                color="error"  
+                onClick={() => {generatePDF(processState)}}
+            >{buttonName}</Button>
+            <div className='mt-4 text-center' >
+            {responseMessage && <p style={{ color: 'green' }}>{responseMessage}</p>}
+            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+            </div>
+            </div>
+        </div>
   );
-};
+};  
 
 export default Step5PolicyDodument;
